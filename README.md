@@ -66,12 +66,20 @@ npm run preview  # serve the production build
 The repo ships a GitHub Actions workflow (`.github/workflows/deploy.yml`) that
 builds and publishes to **GitHub Pages** on every push to `main`.
 
-To turn it on: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+Two repository settings are required once, before the first deploy can succeed:
 
-> GitHub Pages on a **private** repo needs a paid plan. On the free plan either
-> make the repo public — safe to do, because no personal contact data is stored —
-> or connect the repo to Cloudflare Pages / Netlify / Vercel instead (build
-> command `npm run build`, output directory `dist`).
+1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+   The workflow cannot do this for you — creating a Pages site needs
+   repository-admin rights, which `GITHUB_TOKEN` does not have, so
+   `configure-pages` with `enablement: true` fails with *"Resource not
+   accessible by integration"*.
+2. **Settings → Actions → General → Workflow permissions: Read and write.**
+   `actions/deploy-pages` needs `pages: write` at deploy time.
+
+Pages on a **private** repo also needs a paid plan; this repo is public, which is
+safe because no parent contact details are stored. The alternative is Cloudflare
+Pages / Netlify / Vercel against a private repo (build `npm run build`, output
+`dist`).
 
 The build honours `VITE_BASE_PATH`, so the same bundle works from a project
 subpath (`/St.-Pius-PSC/`) or from the root of a custom domain.

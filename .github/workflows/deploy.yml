@@ -35,11 +35,13 @@ jobs:
         run: echo "VITE_BASE_PATH=/${GITHUB_REPOSITORY#*/}/" >> "$GITHUB_ENV"
 
       - run: npm run build
+      # Reads the Pages configuration. Pages must already be switched on for the
+      # repository, with Settings -> Pages -> Build and deployment -> Source set
+      # to "GitHub Actions". Note that `enablement: true` does NOT work here:
+      # creating a Pages site needs repository-admin rights, which GITHUB_TOKEN
+      # does not have, and the API answers "Resource not accessible by
+      # integration".
       - uses: actions/configure-pages@v5
-        with:
-          # Turn GitHub Pages on automatically the first time this runs, so
-          # nobody has to find the setting in the repository options.
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
