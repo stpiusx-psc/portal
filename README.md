@@ -66,6 +66,8 @@ npm run preview  # serve the production build
 The repo ships a GitHub Actions workflow (`.github/workflows/deploy.yml`) that
 builds and publishes to **GitHub Pages** on every push to `main`.
 
+The portal is published at **https://stpiusx-psc.github.io/portal/**.
+
 Two repository settings are required once, before the first deploy can succeed:
 
 1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
@@ -81,8 +83,16 @@ safe because no parent contact details are stored. The alternative is Cloudflare
 Pages / Netlify / Vercel against a private repo (build `npm run build`, output
 `dist`).
 
-The build honours `VITE_BASE_PATH`, so the same bundle works from a project
-subpath (`/St.-Pius-PSC/`) or from the root of a custom domain.
+The workflow derives `VITE_BASE_PATH` from the repository name, so the same
+bundle works from any project subpath (`/portal/`) without editing anything. Set
+it to `/` if the portal later moves to a custom domain served from the root.
+
+### If the repository moves
+
+Transferring or renaming the repository changes the published URL. Three things
+then need updating: the Supabase **Redirect URLs** allow-list (otherwise password
+resets land in whichever app owns the project's Site URL), the URL on the cover of
+`docs/user-manual.html`, and `docs/invitation-email-draft.md`.
 
 ## Accounts and access
 

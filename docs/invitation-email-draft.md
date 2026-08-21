@@ -39,7 +39,7 @@ nothing looks agreed when it is not.
 
 **To get in:**
 
-1. Open https://jchinchillav.github.io/St.-Pius-PSC/
+1. Open https://stpiusx-psc.github.io/portal/
 2. Click "First time here? Create an account"
 3. Sign up with this exact address:
    - Lynda: lyndadfreeman@gmail.com
