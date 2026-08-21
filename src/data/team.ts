@@ -7,6 +7,10 @@ import type { TeamMember } from '../lib/types'
  * Deliberately NAMES AND ROLES ONLY — no emails or phone numbers. Personal
  * contact details stay in the access-controlled PSC Contact List on the
  * shared Drive so that this portal can be deployed without exposing them.
+ *
+ * This is only the starting point. Once a shared database is connected the
+ * roster is editable in the portal (psc_team) and this list is just the
+ * fallback for a local, server-less build.
  */
 export const TEAM: TeamMember[] = [
   { name: 'Lynda Freeman', role: 'PSC Chair', involvement: ['Chair', 'Back to School BBQ', 'Christmas Craft Fair', 'Runathon', 'Family Fun Night'] },

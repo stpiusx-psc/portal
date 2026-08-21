@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { PecMeetingNote, PecReport, PscEvent } from './types'
+import type { PecMeetingNote, PecReport, PscEvent, TeamMember } from './types'
 import { EVENTS } from '../data/events'
 import { MEETINGS } from '../data/meetings'
 import { TEAM } from '../data/team'
@@ -115,7 +115,7 @@ export interface Store {
   schoolYear: string
   events: PscEvent[]
   meetings: typeof MEETINGS
-  team: typeof TEAM
+  team: TeamMember[]
   reports: PecReport[]
   pecNotes: PecMeetingNote[]
   /** Where the data lives, and whether the last write succeeded. */
@@ -128,6 +128,19 @@ export interface Store {
   updateEvent: (id: string, patch: EventOverride) => void
   resetEvent: (id: string) => void
   togglePrep: (eventId: string, index: number) => void
+  /**
+   * Add or update a committee member. Pass `previousName` when renaming so the
+   * person can be followed through their event assignments — the roster is
+   * keyed by name, and a member added in local mode has no database id.
+   */
+  saveTeamMember: (m: TeamMember, previousName?: string) => Promise<string | null>
+  /** Remove somebody from the roster entirely. */
+  deleteTeamMember: (m: TeamMember) => Promise<string | null>
+  /**
+   * Put a person on, or take them off, an event — writing to the event itself
+   * so the calendar and the roster can never disagree.
+   */
+  setAssignment: (eventId: string, person: string, as: 'lead' | 'support', on: boolean) => void
   saveReport: (r: PecReport) => void
   deleteReport: (id: string) => void
   savePecNote: (n: PecMeetingNote) => void
@@ -142,6 +155,9 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
   const [state, setState] = useState<Persisted>(() =>
     remote || typeof window === 'undefined' ? EMPTY : loadLocal(),
   )
+  const [team, setTeam] = useState<TeamMember[]>(TEAM)
+  const stateRef = useRef<Persisted>(EMPTY)
+  const updateEventRef = useRef<(id: string, patch: EventOverride) => void>(() => {})
   const [sync, setSync] = useState<SyncState>(remote ? 'loading' : 'local')
   const [syncMessage, setSyncMessage] = useState<string | null>(null)
   const loadedFor = useRef<string | null>(null)
@@ -155,14 +171,15 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
     setSync('loading')
 
     void (async () => {
-      const [ovRes, repRes, noteRes] = await Promise.all([
+      const [ovRes, repRes, noteRes, teamRes] = await Promise.all([
         supabase.from('psc_event_overrides').select('*').eq('school_year', SCHOOL_YEAR),
         supabase.from('psc_pec_reports').select('*').eq('school_year', SCHOOL_YEAR).order('created_at', { ascending: false }),
         supabase.from('psc_pec_notes').select('*').eq('school_year', SCHOOL_YEAR).order('meeting_date', { ascending: false }),
+        supabase.from('psc_team').select('*').order('sort_order').order('name'),
       ])
       if (cancelled) return
 
-      const err = ovRes.error ?? repRes.error ?? noteRes.error
+      const err = ovRes.error ?? repRes.error ?? noteRes.error ?? teamRes.error
       if (err) {
         setSync('error')
         setSyncMessage(`Could not load the shared data: ${err.message}`)
@@ -197,6 +214,15 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
         sentAt: (r.sent_at as string) ?? undefined,
       }))
 
+      setTeam(((teamRes.data ?? []) as Record<string, unknown>[]).map((r) => ({
+        id: Number(r.id),
+        name: String(r.name),
+        role: String(r.title ?? 'Committee'),
+        active: r.active !== false,
+        involvement: r.note ? String(r.note).split(',').map((x) => x.trim()).filter(Boolean) : [],
+        sortOrder: Number(r.sort_order ?? 1000),
+      })))
+
       setState({ version: 1, overrides, reports, pecNotes })
       setSync('ready')
       setSyncMessage(null)
@@ -207,6 +233,7 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
 
   /* ----------------------------------------------------- local-only persistence */
   useEffect(() => {
+    stateRef.current = state
     if (!remote) saveLocal(state)
   }, [state, remote])
 
@@ -269,6 +296,10 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
     })
   }, [opts.canEdit, pushOverride])
 
+  // Kept in a ref so the team helpers can reassign events without depending on
+  // updateEvent directly, which would make the callbacks re-create each other.
+  useEffect(() => { updateEventRef.current = updateEvent }, [updateEvent])
+
   const saveReport = useCallback((r: PecReport) => {
     if (!opts.canEdit) return
     setState((s) => ({ ...s, reports: [r, ...s.reports.filter((x) => x.id !== r.id)] }))
@@ -323,6 +354,107 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
       void supabase.from('psc_pec_notes').delete().eq('id', id)
         .then(({ error }) => (error ? fail('That deletion', error.message) : ok()))
     }
+  }, [opts.canEdit, remote, fail, ok])
+
+
+
+  /** Current lead/support lists for an event, seed merged with any override. */
+  const rosterOf = useCallback((eventId: string, as: 'lead' | 'support'): string[] => {
+    const base = EVENTS.find((e) => e.id === eventId)
+    const ov = stateRef.current.overrides[eventId]
+    const key = as === 'lead' ? 'mainResp' : 'supportResp'
+    const fromOverride = ov?.[key]
+    if (fromOverride) return fromOverride
+    return (as === 'lead' ? base?.mainResp : base?.supportResp) ?? []
+  }, [])
+
+  const setAssignment = useCallback((eventId: string, person: string, as: 'lead' | 'support', on: boolean) => {
+    if (!opts.canEdit) return
+    const key = as === 'lead' ? 'mainResp' : 'supportResp'
+    const current = rosterOf(eventId, as)
+    const has = current.some((p) => p.toLowerCase() === person.toLowerCase())
+    if (on === has) return
+    const next = on
+      ? [...current, person]
+      : current.filter((p) => p.toLowerCase() !== person.toLowerCase())
+    updateEventRef.current(eventId, { [key]: next } as EventOverride)
+  }, [opts.canEdit, rosterOf])
+
+  /** Follow a renamed person through every event they are credited on. */
+  const renameInAssignments = useCallback((from: string, to: string) => {
+    for (const e of EVENTS) {
+      for (const as of ['lead', 'support'] as const) {
+        const key = as === 'lead' ? 'mainResp' : 'supportResp'
+        const list = rosterOf(e.id, as)
+        if (!list.some((p) => p.toLowerCase() === from.toLowerCase())) continue
+        const next = list.map((p) => (p.toLowerCase() === from.toLowerCase() ? to : p))
+        updateEventRef.current(e.id, { [key]: next } as EventOverride)
+      }
+    }
+  }, [rosterOf])
+
+  /* ------------------------------------------------------------------- team */
+
+  const saveTeamMember = useCallback(async (m: TeamMember, previousName?: string): Promise<string | null> => {
+    if (!opts.canEdit) return 'You have read-only access.'
+    const name = m.name.trim()
+    if (!name) return 'A name is required.'
+
+    // Identify the row being edited by id when we have one, otherwise by the
+    // name it had before this edit. A brand-new member matches nothing, which
+    // is what makes the duplicate check below fire.
+    const wasCalled = previousName?.trim()
+    const isSame = (t: TeamMember) =>
+      m.id != null
+        ? t.id === m.id
+        : wasCalled != null && t.name.toLowerCase() === wasCalled.toLowerCase()
+
+    const clash = team.find((t) => t.name.toLowerCase() === name.toLowerCase() && !isSame(t))
+    if (clash) return `${name} is already on the roster.`
+
+    const renamedFrom = wasCalled && wasCalled.toLowerCase() !== name.toLowerCase() ? wasCalled : null
+
+    const next: TeamMember = { ...m, name }
+    setTeam((cur) => {
+      const without = cur.filter((t) => !isSame(t))
+      return [...without, next].sort(
+        (a, b) => (a.sortOrder ?? 1000) - (b.sortOrder ?? 1000) || a.name.localeCompare(b.name),
+      )
+    })
+
+    // A rename has to follow the person through their event assignments,
+    // otherwise the calendar keeps crediting a name that no longer exists.
+    if (renamedFrom) renameInAssignments(renamedFrom, name)
+
+    if (remote && supabase) {
+      const row = {
+        name,
+        title: m.role || 'Committee',
+        active: m.active !== false,
+        sort_order: m.sortOrder ?? 1000,
+        note: m.involvement.length ? m.involvement.join(', ') : null,
+      }
+      const { data, error } = m.id
+        ? await supabase.from('psc_team').update(row).eq('id', m.id).select('id').maybeSingle()
+        : await supabase.from('psc_team')
+            .upsert(row, { onConflict: 'name' })
+            .select('id').maybeSingle()
+      if (error) { fail('That committee member', error.message); return error.message }
+      if (!m.id && data) setTeam((cur) => cur.map((t) => (t.name === name ? { ...t, id: Number(data.id) } : t)))
+      ok()
+    }
+    return null
+  }, [opts.canEdit, team, remote, fail, ok, renameInAssignments])
+
+  const deleteTeamMember = useCallback(async (m: TeamMember): Promise<string | null> => {
+    if (!opts.canEdit) return 'You have read-only access.'
+    setTeam((cur) => cur.filter((t) => (m.id ? t.id !== m.id : t.name !== m.name)))
+    if (remote && supabase && m.id) {
+      const { error } = await supabase.from('psc_team').delete().eq('id', m.id)
+      if (error) { fail('That removal', error.message); return error.message }
+      ok()
+    }
+    return null
   }, [opts.canEdit, remote, fail, ok])
 
   /* ------------------------------------------------------------ backup files */
@@ -380,7 +512,7 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
     schoolYear: SCHOOL_YEAR,
     events,
     meetings: MEETINGS,
-    team: TEAM,
+    team,
     reports: state.reports,
     pecNotes: state.pecNotes,
     sync,
@@ -391,6 +523,9 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
     updateEvent,
     resetEvent,
     togglePrep,
+    saveTeamMember,
+    deleteTeamMember,
+    setAssignment,
     saveReport,
     deleteReport,
     savePecNote,

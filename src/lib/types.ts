@@ -100,10 +100,19 @@ export interface Meeting {
 }
 
 export interface TeamMember {
+  /** Database id. Absent for members that come from the code seed. */
+  id?: number
   name: string
+  /**
+   * The person's committee position (Chair, Committee, Principal).
+   * NOT an access level — that lives in the psc_members roster.
+   */
   role: string
-  /** Areas this person owns. */
+  /** Set false when a family leaves the school; keeps the history readable. */
+  active?: boolean
+  /** Areas this person owns, as free text. Assignments come from the events. */
   involvement: string[]
+  sortOrder?: number
 }
 
 /** A generated report for the PEC, derived from a PSC agenda or minutes. */
