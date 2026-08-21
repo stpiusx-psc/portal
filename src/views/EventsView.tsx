@@ -165,6 +165,20 @@ function EventDetail({ event: e, store }: { event: PscEvent; store: Store }) {
 
   const prepTotal = e.prep?.length ?? 0
   const prepDone = (e.prep ?? []).filter((t) => t.done).length
+  const prepUnassigned = (e.prep ?? []).filter((t) => !t.owner).length
+
+  /**
+   * Names offered for a task. Current committee members first, plus anyone
+   * already named on this event or on one of its tasks — so a seeded owner who
+   * has left the roster is never silently dropped from the list.
+   */
+  const people = useMemo(() => {
+    const set = new Set<string>()
+    for (const m of store.team) if (m.active !== false) set.add(m.name)
+    for (const p of [...e.mainResp, ...(e.supportResp ?? [])]) set.add(p)
+    for (const t of e.prep ?? []) if (t.owner) set.add(t.owner)
+    return [...set].sort((a, b) => a.localeCompare(b))
+  }, [store.team, e])
 
   return (
     <>
@@ -263,19 +277,46 @@ function EventDetail({ event: e, store }: { event: PscEvent; store: Store }) {
             <div className="card-head">
               <h2>Preparation timeline</h2>
               <span className="spacer" />
+              {prepUnassigned > 0 && <Chip tone="warn">{prepUnassigned} unassigned</Chip>}
               <Chip tone={prepDone === prepTotal ? 'ok' : 'plain'}>{prepDone} / {prepTotal} done</Chip>
             </div>
             <div className="card-pad">
+              {!store.readOnly && (
+                <p className="hint" style={{ marginTop: 0, marginBottom: 12 }}>
+                  Set who is doing each task straight from this list. The names come from
+                  Team &amp; Roles.
+                </p>
+              )}
               {prepByMonth.map(([month, tasks]) => (
                 <div key={month} style={{ marginBottom: 14 }}>
                   <div className="section-title" style={{ marginTop: 0 }}>{formatMonthKey(month)}</div>
                   {tasks.map((t) => (
-                    <label className={`prep-row${t.done ? ' done' : ''}`} key={t.idx}>
-                      <input type="checkbox" checked={t.done} disabled={store.readOnly} onChange={() => store.togglePrep(e.id, t.idx)} />
+                    <div className={`prep-row${t.done ? ' done' : ''}`} key={t.idx}>
+                      <input
+                        type="checkbox"
+                        checked={t.done}
+                        disabled={store.readOnly}
+                        aria-label={`Mark done: ${t.task}`}
+                        onChange={() => store.togglePrep(e.id, t.idx)}
+                      />
                       <span className="wk">{t.week}</span>
                       <span className="task">{t.task}</span>
-                      {t.owner && <span className="owner">{t.owner}</span>}
-                    </label>
+                      <span className="owner">
+                        {store.readOnly ? (
+                          t.owner ?? <span style={{ color: 'var(--ink-faint)' }}>Unassigned</span>
+                        ) : (
+                          <select
+                            className={`owner-select${t.owner ? '' : ' unassigned'}`}
+                            value={t.owner ?? ''}
+                            aria-label={`Who is doing: ${t.task}`}
+                            onChange={(ev) => store.setPrepOwner(e.id, t.idx, ev.target.value)}
+                          >
+                            <option value="">Unassigned</option>
+                            {people.map((p) => <option key={p} value={p}>{p}</option>)}
+                          </select>
+                        )}
+                      </span>
+                    </div>
                   ))}
                 </div>
               ))}

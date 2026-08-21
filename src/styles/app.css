@@ -292,3 +292,16 @@ ul.plain li { margin-bottom: 5px; }
 .sidebar-user .who { color: #fff; font-weight: 600; font-size: 12.5px; word-break: break-word; }
 .sidebar-user .btn { margin-top: 8px; width: 100%; justify-content: center; background: transparent; border-color: rgba(255,255,255,.22); color: #cfe3d9; }
 .sidebar-user .btn:hover { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.4); }
+
+/* Owner picker inside the preparation timeline. Looks like text until you
+   reach for it, so a long task list stays readable. */
+.owner-select {
+  width: auto; max-width: 190px;
+  padding: 2px 6px; font-size: 12px;
+  border-color: transparent; background: transparent;
+  color: var(--ink-muted); cursor: pointer;
+}
+.owner-select:hover { border-color: var(--line); background: var(--surface); }
+.owner-select:focus { border-color: var(--spx-green-600); background: var(--surface); }
+.owner-select.unassigned { color: var(--warn); font-style: italic; }
+.prep-row .owner { margin-left: auto; flex: 0 0 auto; }

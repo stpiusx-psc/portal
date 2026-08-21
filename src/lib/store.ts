@@ -18,7 +18,11 @@ export type EventOverride = Partial<
     PscEvent,
     'date' | 'endDate' | 'dateConfidence' | 'mainResp' | 'supportResp' | 'signUpUrl' | 'budget' | 'notes' | 'status' | 'volunteerCount'
   >
-> & { prepDone?: Record<string, boolean> }
+> & {
+  prepDone?: Record<string, boolean>
+  /** Who is doing each preparation task, keyed by its index in the seed list. */
+  prepOwner?: Record<string, string>
+}
 
 interface Persisted {
   version: 1
@@ -64,6 +68,7 @@ type OverrideRow = {
   status: PscEvent['status'] | null
   notes: string | null
   prep_done: Record<string, boolean> | null
+  prep_owner: Record<string, string> | null
 }
 
 function rowToOverride(r: OverrideRow): EventOverride {
@@ -79,6 +84,7 @@ function rowToOverride(r: OverrideRow): EventOverride {
   if (r.status) ov.status = r.status
   if (r.notes) ov.notes = r.notes
   if (r.prep_done) ov.prepDone = r.prep_done
+  if (r.prep_owner) ov.prepOwner = r.prep_owner
   return ov
 }
 
@@ -97,13 +103,19 @@ function overrideToRow(eventId: string, ov: EventOverride) {
     status: ov.status ?? null,
     notes: ov.notes ?? null,
     prep_done: ov.prepDone ?? {},
+    prep_owner: ov.prepOwner ?? {},
   }
 }
 
 /** Apply stored overrides on top of the seed event. */
 function merge(base: PscEvent, ov: EventOverride | undefined): PscEvent {
   if (!ov) return base
-  const prep = base.prep?.map((t, i) => ({ ...t, done: ov.prepDone?.[`${i}`] ?? t.done }))
+  const prep = base.prep?.map((t, i) => ({
+    ...t,
+    done: ov.prepDone?.[`${i}`] ?? t.done,
+    // An explicitly cleared owner is stored as '' and must win over the seed.
+    owner: ov.prepOwner?.[`${i}`] !== undefined ? ov.prepOwner[`${i}`] || undefined : t.owner,
+  }))
   return { ...base, ...ov, prep }
 }
 
@@ -128,6 +140,8 @@ export interface Store {
   updateEvent: (id: string, patch: EventOverride) => void
   resetEvent: (id: string) => void
   togglePrep: (eventId: string, index: number) => void
+  /** Assign (or clear, with an empty string) the owner of one prep task. */
+  setPrepOwner: (eventId: string, index: number, owner: string) => void
   /**
    * Add or update a committee member. Pass `previousName` when renaming so the
    * person can be followed through their event assignments — the roster is
@@ -299,6 +313,17 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
   // Kept in a ref so the team helpers can reassign events without depending on
   // updateEvent directly, which would make the callbacks re-create each other.
   useEffect(() => { updateEventRef.current = updateEvent }, [updateEvent])
+
+  const setPrepOwner = useCallback((eventId: string, index: number, owner: string) => {
+    if (!opts.canEdit) return
+    setState((s) => {
+      const cur = s.overrides[eventId] ?? {}
+      const prepOwner = { ...(cur.prepOwner ?? {}), [String(index)]: owner }
+      const next = { ...cur, prepOwner }
+      pushOverride(eventId, next)
+      return { ...s, overrides: { ...s.overrides, [eventId]: next } }
+    })
+  }, [opts.canEdit, pushOverride])
 
   const saveReport = useCallback((r: PecReport) => {
     if (!opts.canEdit) return
@@ -523,6 +548,7 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
     updateEvent,
     resetEvent,
     togglePrep,
+    setPrepOwner,
     saveTeamMember,
     deleteTeamMember,
     setAssignment,
