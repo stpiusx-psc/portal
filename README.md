@@ -87,11 +87,22 @@ The workflow derives `VITE_BASE_PATH` from the repository name, so the same
 bundle works from any project subpath (`/portal/`) without editing anything. Set
 it to `/` if the portal later moves to a custom domain served from the root.
 
-**Only the default branch can publish.** The `github-pages` environment refuses
-deployments from anything else, and it refuses them before the job starts — no
-steps, no log, just a red run. The `deploy` job therefore checks the ref and
-skips itself elsewhere, so a feature-branch push ends green with `build` doing
-duty as a type-check. To change which branch is live, change the default branch.
+**Publishing is gated twice, in two different places.** The `deploy` job skips
+itself outside the default branch — that is this repository's policy, and it is
+why a feature-branch push ends green with `build` acting as a type-check. But
+the `github-pages` **environment** has its own "Deployment branches and tags"
+rule under *Settings -> Environments*, and that one is the hard gate.
+
+GitHub writes that rule when Pages is first enabled, naming whichever branch was
+the default **at that moment**, and it does not follow a later change of default
+branch. So switching the default branch is not enough on its own: the
+environment rule has to be updated to name the new branch too, or every deploy
+is refused.
+
+A refusal there is nearly unreadable: the job is rejected before it starts, so
+it ends in about a second with no steps, no runner and no log. Build green and
+deploy dead in one second on the branch that is supposed to publish means the
+environment rule is stale.
 
 ### If the repository moves
 

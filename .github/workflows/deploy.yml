@@ -59,16 +59,20 @@ jobs:
 
   deploy:
     needs: build
-    # The github-pages environment only accepts deployments from the
-    # repository's DEFAULT branch. Attempting it from any other branch does not
-    # produce a useful error: the job is refused before it starts, so it ends in
-    # about a second with no steps, no runner and no log, and the run shows up
-    # red for a reason nothing on screen explains. Skip it explicitly instead,
-    # so a feature-branch push ends green with the deploy marked skipped.
+    # Publishing is gated TWICE and the two gates are set in different places.
     #
-    # Consequence worth knowing: whichever branch is the default is the only one
-    # that can publish. Changing the default branch changes what the live site
-    # serves on the next push.
+    # 1. This condition, which is our policy: only the default branch publishes,
+    #    so a feature-branch push builds (a useful type-check) and stops there.
+    # 2. The github-pages environment's "Deployment branches and tags" rule, in
+    #    Settings -> Environments. GitHub writes that rule when Pages is first
+    #    switched on, naming whatever the default branch was AT THAT MOMENT, and
+    #    it does NOT follow a later change of default branch. Renaming or
+    #    switching the default branch therefore leaves a stale rule behind.
+    #
+    # A branch refused by gate 2 fails in a way that explains nothing: the job
+    # is rejected before it starts, so it ends in about a second with no steps,
+    # no runner and no log at all. If a push to the default branch builds and
+    # then dies like that, gate 2 is the thing to go and look at — not this file.
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     environment:
