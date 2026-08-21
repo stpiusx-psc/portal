@@ -76,25 +76,51 @@ To turn it on: **Settings → Pages → Build and deployment → Source: GitHub 
 The build honours `VITE_BASE_PATH`, so the same bundle works from a project
 subpath (`/St.-Pius-PSC/`) or from the root of a custom domain.
 
-## Storage: how edits are saved
+## Accounts and access
 
-Right now edits are saved in **the browser of whoever makes them** and are not yet
-shared between people. That was a deliberate first step: the portal is fully usable
-today with no database to set up or pay for. **Backup & Data** exports everything to
-a single JSON file — keep it in the shared Drive.
+Sign-in is **email and password**. Access is granted per email address in the
+`psc_members` table, so somebody can be authorised *before* they have an account:
 
-To make it genuinely shared, apply `supabase/migrations/0001_init.sql` to a Supabase
-project and set:
+1. An administrator adds their email under **People &amp; Access** in the portal.
+2. That person opens the portal, chooses *Create an account*, and signs up with
+   exactly that email.
+3. They confirm the address from the email Supabase sends, then sign in.
+
+Three access levels: **admin** (everything, plus inviting people), **editor** (can
+change dates, owners, budgets, reports and notes) and **viewer** (read only).
+
+Anyone who signs up with an email that is *not* on the roster gets a clear "not on
+the list yet" screen and, crucially, **no data** — row-level security returns zero
+rows rather than relying on the UI to hide anything. This is verified in the
+database, not just in the client.
+
+## Storage
+
+The deployed portal reads and writes a shared Supabase database, so an edit by one
+person is immediately visible to everyone else. The relevant configuration lives in
+`.env.production`:
 
 ```
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
 ```
 
-The migration creates a `psc` schema (so it can live inside an existing project),
-tables for the editable event fields, PEC reports and PEC notes, and row-level
-security driven by a `psc.members` roster with `admin` / `editor` / `viewer` roles.
-Sign-in is by email magic link, which works with any address including Gmail.
+The anon key is Supabase's *publishable* client key and is meant to be in the
+bundle — it grants nothing on its own. Never put the `service_role` key there,
+because that one does bypass row-level security.
+
+Builds without those variables fall back to browser-local storage and say so in the
+sidebar, which is what `npm run dev` does by default.
+
+**Backup &amp; Data** still exports everything to a single JSON file. Worth doing
+before any big change.
+
+### The database
+
+`supabase/migrations/` holds what is actually deployed, applied to the **Docusafe**
+Supabase project. The tables sit in `public` with a `psc_` prefix, matching the
+`cmd_`/`cmo_`/`pv_` convention that project already uses, and each has its own
+row-level security so the portal shares nothing with the other apps in there.
 
 ## Project layout
 

@@ -1,0 +1,4 @@
+# The portal holds committee planning material. It is behind a sign-in, but the
+# public wrapper should not be indexed either.
+User-agent: *
+Disallow: /

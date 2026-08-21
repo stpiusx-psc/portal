@@ -151,6 +151,11 @@ export function EventEditor({
             <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything the committee should know for this year's run." />
           </label>
 
+          {store.readOnly && (
+            <div className="callout warn">
+              You have read-only access, so these fields cannot be saved.
+            </div>
+          )}
           {error && <div className="callout warn">{error}</div>}
         </div>
 
@@ -159,13 +164,13 @@ export function EventEditor({
             <button className="btn btn-ghost" onClick={() => onOpenPlaybook(event.id)}>Open full playbook →</button>
           )}
           <span style={{ marginLeft: 'auto' }} />
-          {store.isEdited(event.id) && (
+          {store.isEdited(event.id) && !store.readOnly && (
             <button className="btn btn-danger" onClick={() => { store.resetEvent(event.id); onClose() }}>
               Reset to original
             </button>
           )}
-          <button className="btn" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={save}>Save</button>
+          <button className="btn" onClick={onClose}>{store.readOnly ? 'Close' : 'Cancel'}</button>
+          {!store.readOnly && <button className="btn btn-primary" onClick={save}>Save</button>}
         </div>
       </div>
     </div>

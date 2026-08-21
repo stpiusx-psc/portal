@@ -176,7 +176,7 @@ function EventDetail({ event: e, store }: { event: PscEvent; store: Store }) {
         <div className="topbar-actions">
           <button className="btn btn-ghost" onClick={() => navigate({ view: 'events' })}>← All events</button>
           <button className="btn" onClick={printView}>⎙ Print playbook</button>
-          <button className="btn btn-primary" onClick={() => setEditing(true)}>Edit details</button>
+          <button className="btn btn-primary" onClick={() => setEditing(true)}>{store.readOnly ? 'View details' : 'Edit details'}</button>
         </div>
       </header>
 
@@ -271,7 +271,7 @@ function EventDetail({ event: e, store }: { event: PscEvent; store: Store }) {
                   <div className="section-title" style={{ marginTop: 0 }}>{formatMonthKey(month)}</div>
                   {tasks.map((t) => (
                     <label className={`prep-row${t.done ? ' done' : ''}`} key={t.idx}>
-                      <input type="checkbox" checked={t.done} onChange={() => store.togglePrep(e.id, t.idx)} />
+                      <input type="checkbox" checked={t.done} disabled={store.readOnly} onChange={() => store.togglePrep(e.id, t.idx)} />
                       <span className="wk">{t.week}</span>
                       <span className="task">{t.task}</span>
                       {t.owner && <span className="owner">{t.owner}</span>}

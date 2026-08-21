@@ -2,7 +2,9 @@ name: Build and deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    # The portal deploys from the development branch too, so the committee has a
+    # working URL before the branch is merged.
+    branches: [main, claude/psc-pec-reports-portal-trwzfh]
   workflow_dispatch:
 
 permissions:
