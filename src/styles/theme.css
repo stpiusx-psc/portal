@@ -1,0 +1,52 @@
+/* ------------------------------------------------------------------
+   St. Pius X design tokens.
+   Uniform colours: dark green sweater + navy. Crest gold as the accent.
+   ------------------------------------------------------------------ */
+:root {
+  --spx-green-900: #0a3325;
+  --spx-green-800: #0f4c35;
+  --spx-green-700: #146045;
+  --spx-green-600: #1d7a58;
+  --spx-green-100: #e3f0ea;
+  --spx-green-50:  #f2f8f5;
+
+  --spx-navy-900: #101c33;
+  --spx-navy-800: #1b2a4a;
+  --spx-navy-600: #2f4470;
+  --spx-navy-100: #e6eaf3;
+
+  --spx-gold-600: #a8823c;
+  --spx-gold-500: #c8a45c;
+  --spx-gold-100: #f7efdd;
+
+  --ink:        #16211d;
+  --ink-muted:  #5b6b64;
+  --ink-faint:  #8a9691;
+  --line:       #dfe6e2;
+  --line-soft:  #edf2ef;
+  --surface:    #ffffff;
+  --canvas:     #f6f8f7;
+
+  --ok:      #1d7a58;
+  --warn:    #b4791b;
+  --warn-bg: #fdf4e3;
+  --danger:  #a4342c;
+  --danger-bg: #fbeeed;
+  --info-bg: var(--spx-green-50);
+
+  --radius:    10px;
+  --radius-sm: 6px;
+  --shadow:    0 1px 2px rgba(16, 28, 51, .06), 0 4px 14px rgba(16, 28, 51, .06);
+  --shadow-lg: 0 8px 32px rgba(16, 28, 51, .14);
+
+  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: Georgia, 'Times New Roman', serif;
+}
+
+/* Category accents — used for calendar chips and event headers. */
+.cat-fundraiser      { --cat: #0f4c35; --cat-bg: #e3f0ea; }
+.cat-community       { --cat: #1b2a4a; --cat-bg: #e6eaf3; }
+.cat-faith           { --cat: #7a4a86; --cat-bg: #f2e9f4; }
+.cat-school-support  { --cat: #a8823c; --cat-bg: #f7efdd; }
+.cat-ongoing         { --cat: #38625c; --cat-bg: #e5efee; }
+.cat-governance      { --cat: #5b6b64; --cat-bg: #eef1f0; }
