@@ -15,10 +15,18 @@ interface AuthState {
   canEdit: boolean
   isAdmin: boolean
   signIn: (email: string, password: string) => Promise<string | null>
-  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null; needsConfirmation: boolean }>
+  signUp: (email: string, password: string, name: string) => Promise<SignUpOutcome>
   resetPassword: (email: string) => Promise<string | null>
   updatePassword: (password: string) => Promise<string | null>
   signOut: () => Promise<void>
+}
+
+interface SignUpOutcome {
+  error: string | null
+  /** The account was created and the address has to be confirmed by email. */
+  needsConfirmation: boolean
+  /** The address already has an account, so no email was sent. */
+  alreadyRegistered: boolean
 }
 
 const Ctx = createContext<AuthState | null>(null)
@@ -87,15 +95,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signUp = useCallback(async (e: string, password: string, name: string) => {
-    if (!supabase) return { error: 'This build has no server configured.', needsConfirmation: false }
+    if (!supabase) return { error: 'This build has no server configured.', needsConfirmation: false, alreadyRegistered: false }
     const { data, error } = await supabase.auth.signUp({
       email: e.trim().toLowerCase(),
       password,
       options: { data: { display_name: name.trim() }, emailRedirectTo: window.location.origin + window.location.pathname },
     })
-    if (error) return { error: friendly(error.message), needsConfirmation: false }
+    if (error) return { error: friendly(error.message), needsConfirmation: false, alreadyRegistered: false }
+
+    // Signing up with an address that already has a confirmed account is NOT an
+    // error as far as Supabase is concerned: it answers with a success and a
+    // stub user, and sends no email, deliberately, so that this form cannot be
+    // used to find out who is registered. The give-away is an empty identities
+    // array. Reporting "we emailed you a confirmation link" here leaves someone
+    // waiting for a message that was never sent.
+    //
+    // This is easy to hit because the Supabase project is shared with the other
+    // app in it: anybody who already has an account there already has one here.
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      return { error: null, needsConfirmation: false, alreadyRegistered: true }
+    }
+
     // No session back means the project requires email confirmation first.
-    return { error: null, needsConfirmation: !data.session }
+    return { error: null, needsConfirmation: !data.session, alreadyRegistered: false }
   }, [])
 
   const resetPassword = useCallback(async (e: string) => {

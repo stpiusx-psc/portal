@@ -28,6 +28,10 @@ export function SignIn() {
         if (password.length < 6) { setError('Please choose a password of at least 6 characters.'); return }
         const res = await auth.signUp(email, password, name)
         if (res.error) setError(res.error)
+        else if (res.alreadyRegistered) {
+          setNotice(`${email} already has an account, so no email was sent. Sign in below — or use “Forgot your password?” if you do not remember the password.`)
+          setMode('signin')
+        }
         else if (res.needsConfirmation) {
           setNotice(`Almost there. We have emailed a confirmation link to ${email}. Open it, then come back here and sign in.`)
           setMode('signin')

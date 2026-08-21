@@ -113,6 +113,14 @@ Sign-in is **email and password**. Access is granted per email address in the
    exactly that email.
 3. They confirm the address from the email Supabase sends, then sign in.
 
+The Supabase project is **shared with the other app in it**, and so is its pool
+of accounts. Anybody who already signed in to that app already has an account
+here and must use *Sign in*, not *Create an account* — signing up again sends no
+email at all, because Supabase answers a repeat sign-up with a success and
+silence rather than admitting the address is taken. The portal detects that case
+and says so instead of promising an email; if somebody is stuck waiting for a
+confirmation that never arrives, *Forgot your password?* is the way in.
+
 Three access levels: **admin** (everything, plus inviting people), **editor** (can
 change dates, owners, budgets, reports and notes) and **viewer** (read only).
 
