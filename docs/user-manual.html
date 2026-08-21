@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SPX PSC Portal — User Guide</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  :root {
+    --green: #0f4c35; --green-dark: #0a3325; --green-light: #e3f0ea;
+    --gold: #c8a45c; --gold-light: #f7efdd; --navy: #1b2a4a;
+    --ink: #16211d; --muted: #5b6b64; --line: #dfe6e2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: var(--ink); font-size: 10.5pt; line-height: 1.55; margin: 0;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; line-height: 1.25; }
+  h1 { font-size: 26pt; color: var(--green); margin: 0 0 4pt; }
+  h2 {
+    font-size: 15pt; color: var(--green); margin: 22pt 0 8pt;
+    padding-bottom: 4pt; border-bottom: 1.5pt solid var(--green);
+    page-break-after: avoid;
+  }
+  h3 { font-size: 11.5pt; color: var(--navy); margin: 14pt 0 4pt; page-break-after: avoid; }
+  p { margin: 0 0 8pt; }
+  ul, ol { margin: 0 0 10pt; padding-left: 18pt; }
+  li { margin-bottom: 4pt; }
+  strong { color: var(--green-dark); }
+  a { color: var(--green); word-break: break-word; }
+  code {
+    font-family: 'Consolas', monospace; font-size: 9.5pt;
+    background: var(--green-light); padding: 1pt 4pt; border-radius: 3pt;
+  }
+
+  /* ------------------------------------------------------------ cover */
+  .cover { page-break-after: always; padding-top: 34mm; text-align: center; }
+  .crest {
+    width: 74pt; height: 74pt; margin: 0 auto 18pt; border-radius: 14pt;
+    background: var(--green); color: var(--gold);
+    font-family: Georgia, serif; font-weight: bold; font-size: 26pt;
+    line-height: 74pt; letter-spacing: 1pt;
+  }
+  .cover h1 { font-size: 30pt; }
+  .cover .sub { font-size: 13pt; color: var(--muted); margin-bottom: 30pt; }
+  .cover .motto {
+    font-family: Georgia, serif; font-style: italic; color: var(--gold);
+    font-size: 12pt; letter-spacing: .5pt; margin-top: 34pt;
+  }
+  .cover-box {
+    text-align: left; border: 1pt solid var(--line); border-left: 4pt solid var(--gold);
+    background: #fbfdfc; padding: 14pt 18pt; margin: 0 auto; max-width: 132mm;
+  }
+  .cover-box h3 { margin-top: 0; }
+
+  /* ---------------------------------------------------------- elements */
+  .callout {
+    border-left: 3.5pt solid var(--gold); background: var(--gold-light);
+    padding: 9pt 13pt; margin: 10pt 0; page-break-inside: avoid;
+  }
+  .callout.green { border-color: var(--green); background: var(--green-light); }
+  .callout p:last-child { margin-bottom: 0; }
+  figure { margin: 12pt 0 14pt; page-break-inside: avoid; }
+  figure img { width: 100%; border: 1pt solid var(--line); border-radius: 4pt; display: block; }
+  figcaption { font-size: 9pt; color: var(--muted); margin-top: 4pt; font-style: italic; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 10pt 0 14pt; page-break-inside: avoid; }
+  th {
+    background: var(--green); color: #fff; text-align: left; padding: 6pt 8pt;
+    font-size: 8.5pt; text-transform: uppercase; letter-spacing: .4pt;
+  }
+  td { padding: 6pt 8pt; border-bottom: .75pt solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: #f7faf9; }
+  .step { margin-bottom: 12pt; page-break-inside: avoid; }
+  .step .n {
+    display: inline-block; width: 17pt; height: 17pt; line-height: 17pt; text-align: center;
+    background: var(--green); color: #fff; border-radius: 50%;
+    font-size: 9.5pt; font-weight: bold; margin-right: 6pt;
+  }
+  .chip {
+    display: inline-block; font-size: 8.5pt; font-weight: bold; padding: 1pt 6pt;
+    border-radius: 8pt; background: var(--green-light); color: var(--green);
+  }
+  .chip.amber { background: var(--gold-light); color: #8a6a26; }
+  .section { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ COVER -->
+<div class="cover">
+  <div class="crest">SPX</div>
+  <h1>PSC Portal</h1>
+  <div class="sub">User Guide for the PSC Chair<br>St. Pius X Elementary School · School year 2026&#8209;27</div>
+
+  <div class="cover-box">
+    <h3>What this portal is for</h3>
+    <p>
+      One place for the PSC's year: the full calendar of activities, a playbook for every
+      event, and the monthly reporting between the PSC and the Parents Education Committee.
+    </p>
+    <p style="margin-bottom:0">
+      It was built from your own material — the 2025&#8209;26 minutes and the PSC shared Drive.
+      The events, the run sheets, the prior-year numbers and the lessons learned are all
+      already in it.
+    </p>
+  </div>
+
+  <div class="motto">Reverence &middot; Respect &middot; Responsibility</div>
+</div>
+
+<!-- ======================================================== SECTION 1 -->
+<h2>1. Getting in</h2>
+
+<p>
+  Open the portal link in any browser — a laptop, a tablet or a phone. There is nothing to
+  install and no password to remember for now.
+</p>
+
+<div class="callout">
+  <p>
+    <strong>Your work is saved in the browser you use.</strong> If you open the portal on your
+    laptop, your changes are on that laptop. They are not yet visible to anyone else, and they
+    are not yet synced between your devices. Section 7 explains how to back them up and how
+    we make it properly shared.
+  </p>
+</div>
+
+<p>The menu on the left has six screens:</p>
+
+<table>
+  <tr><th style="width:38%">Screen</th><th>What it is for</th></tr>
+  <tr><td><strong>Dashboard</strong></td><td>What is coming up and what still needs a decision.</td></tr>
+  <tr><td><strong>Year Calendar</strong></td><td>The whole year. Set dates, owners, budgets and sign-up links. Export for sharing.</td></tr>
+  <tr><td><strong>Events &amp; Playbooks</strong></td><td>Every event, with its run sheet, timeline, past numbers and documents.</td></tr>
+  <tr><td><strong>PEC Reports</strong></td><td>Jorge turns your minutes into the monthly PEC report here.</td></tr>
+  <tr><td><strong>PEC Meeting Notes</strong></td><td>Jorge's notes from the PEC meeting, and the feedback email back to you.</td></tr>
+  <tr><td><strong>Team &amp; Roles</strong></td><td>Who owns what this year, and the PSC meeting schedule.</td></tr>
+</table>
+
+<!-- ======================================================== SECTION 2 -->
+<h2>2. The Dashboard</h2>
+
+<p>
+  The first screen answers two questions: what is next, and what is waiting on somebody.
+  The right-hand column lists events with no owner, events that need volunteers but have no
+  sign-up link yet, and dates that are still unconfirmed.
+</p>
+
+<figure>
+  <img src="img/dashboard.png" alt="The Dashboard screen">
+  <figcaption>The Dashboard — upcoming events on the left, open decisions on the right.</figcaption>
+</figure>
+
+<!-- ======================================================== SECTION 3 -->
+<div class="section"></div>
+<h2>3. The most important job first: confirming the dates</h2>
+
+<div class="callout">
+  <p>
+    The calendar was built from <strong>last year's</strong> minutes. Every date was moved
+    forward to the matching week of this year, so almost every event currently shows
+    <span class="chip amber">Proposed</span>. A proposed date is a starting point for your
+    conversation with Ms. Francis — it is not an agreed date.
+  </p>
+</div>
+
+<p>
+  Once a date is agreed, mark it <span class="chip">Confirmed</span>. Anything still proposed
+  is labelled "(proposed)" in every export, so a provisional date can never accidentally reach
+  parents as if it were final.
+</p>
+
+<h3>To set or confirm a date</h3>
+
+<div class="step"><span class="n">1</span> Open <strong>Year Calendar</strong>.</div>
+<div class="step"><span class="n">2</span> Click the event name — either in the month grid or in the list underneath.</div>
+<div class="step"><span class="n">3</span> Set the <strong>Date</strong>. The panel shows you what last year's date was, for reference.</div>
+<div class="step"><span class="n">4</span> Change <strong>Date status</strong> to <em>Confirmed &mdash; agreed with the school / parish</em>.</div>
+<div class="step"><span class="n">5</span> Press <strong>Save</strong>.</div>
+
+<figure>
+  <img src="img/edit-event.png" alt="The event editing panel">
+  <figcaption>Everything you can change about an event: date, owner, budget, volunteer slots and sign-up link.</figcaption>
+</figure>
+
+<p>The same panel is where you set the rest:</p>
+
+<ul>
+  <li><strong>Main responsible</strong> — who is leading it. Separate several names with commas.</li>
+  <li><strong>Support team</strong> — the rest of the committee helping.</li>
+  <li><strong>Assigned budget</strong> — what the event may spend. Last year's actual revenue, costs and net are shown underneath so you are budgeting from evidence rather than memory.</li>
+  <li><strong>Volunteer slots</strong> — how many people you need.</li>
+  <li><strong>SignUpGenius link</strong> — paste it once and it appears on the calendar, in the playbook and in every export.</li>
+  <li><strong>Notes for this year</strong> — anything the committee should know for this run.</li>
+</ul>
+
+<p>
+  If you change your mind, <strong>Reset to original</strong> puts that one event back to how
+  it was seeded. It only affects that event.
+</p>
+
+<!-- ======================================================== SECTION 4 -->
+<div class="section"></div>
+<h2>4. Sharing the calendar</h2>
+
+<p>
+  At the top of <strong>Year Calendar</strong> you choose how much to show, then export it.
+  Three controls shape the output:
+</p>
+
+<table>
+  <tr><th style="width:24%">Control</th><th>Options</th></tr>
+  <tr><td><strong>Range</strong></td><td>One month · Two months · A term (five months) · The full year</td></tr>
+  <tr>
+    <td><strong>Detail</strong></td>
+    <td>
+      <em>Summary</em> — dates and event names only, for a bulletin.<br>
+      <em>Standard</em> — adds the owner, the budget and volunteer status.<br>
+      <em>Full</em> — adds last year's revenue, costs, net result and the lessons learned. Best for a committee meeting.
+    </td>
+  </tr>
+  <tr><td><strong>Layout</strong></td><td>A month grid, or a plain agenda list.</td></tr>
+</table>
+
+<figure>
+  <img src="img/calendar.png" alt="The Year Calendar screen">
+  <figcaption>The Year Calendar. Dotted event borders mean the date is still proposed.</figcaption>
+</figure>
+
+<h3>The four export buttons</h3>
+
+<ul>
+  <li><strong>Print / PDF</strong> — opens your browser's print dialogue. Choose <em>Save as PDF</em> as the destination. The menus and buttons are removed automatically, so you get a clean document to email or hand out.</li>
+  <li><strong>Calendar (.ics)</strong> — a calendar file. In Google Calendar go to <em>Settings → Import &amp; export → Import</em> and select it, and every PSC event appears in your own calendar.</li>
+  <li><strong>Spreadsheet</strong> — a CSV that opens in Excel or Google Sheets, with every field including budgets and sign-up links.</li>
+  <li><strong>Text</strong> — a plain list, easy to paste straight into an email or the school bulletin.</li>
+</ul>
+
+<div class="callout green">
+  <p>
+    <strong>Tip.</strong> For the school bulletin use <em>Range: One month</em> with
+    <em>Detail: Summary</em>. For a PSC meeting use <em>Range: A term</em> with
+    <em>Detail: Full</em> — that gives you last year's numbers next to this year's plan.
+  </p>
+</div>
+
+<!-- ======================================================== SECTION 5 -->
+<div class="section"></div>
+<h2>5. Event playbooks</h2>
+
+<p>
+  This is the part meant to outlast any one volunteer. Open <strong>Events &amp; Playbooks</strong>
+  and click an event. Depending on the event you will find:
+</p>
+
+<ul>
+  <li><strong>Prior-year results</strong> — the real revenue, costs and net from the finance sheets on the Drive. The Christmas Craft Fair, for example, carries both 2025 and 2024.</li>
+  <li><strong>Preparation timeline</strong> — the tasks from the PSC Timeline, grouped by month and week, with the owner. Tick them off as you go; the ticks are saved.</li>
+  <li><strong>Run sheet</strong> — the step-by-step instructions for the day, taken from your own station instruction documents.</li>
+  <li><strong>Lessons learned</strong> — the debrief points, so last year's mistakes are read <em>before</em> planning starts rather than rediscovered.</li>
+  <li><strong>Documents</strong> — direct links to the forms, layouts and sheets in the shared Drive.</li>
+</ul>
+
+<figure>
+  <img src="img/playbook.png" alt="An event playbook">
+  <figcaption>The Christmas Craft Fair playbook, with prior-year results and the preparation timeline.</figcaption>
+</figure>
+
+<p>
+  <strong>Print playbook</strong> gives you a PDF of the whole thing — useful to hand to whoever
+  is taking an event on for the first time.
+</p>
+
+<p>
+  The events list also keeps a record of what the PSC has <em>stopped</em> doing. Set
+  <em>Show: Include discontinued &amp; ideas</em> and you will see the Costume Sale marked
+  discontinued, with the October 2025 reasoning attached, and the Grade 7 book sale kept as an
+  idea. That way a decision is not quietly reversed a few years later.
+</p>
+
+<!-- ======================================================== SECTION 6 -->
+<div class="section"></div>
+<h2>6. How the PSC &harr; PEC reporting works</h2>
+
+<p>
+  This is Jorge's side, but it is worth knowing what happens to the minutes you send, because
+  it explains what comes back to you.
+</p>
+
+<div class="step">
+  <span class="n">1</span>
+  <strong>You send the agenda or the minutes</strong> — exactly as you do today, before and after each PSC meeting. Nothing changes for you.
+</div>
+<div class="step">
+  <span class="n">2</span>
+  <strong>Jorge pastes it into PEC Reports.</strong> The portal reads the document and sorts it into
+  highlights, decisions taken, financials, things needing PEC attention, and what is coming up.
+  Every line is taken from your text — nothing is added or invented — and Jorge edits it before it goes anywhere.
+</div>
+<div class="step">
+  <span class="n">3</span>
+  <strong>Jorge takes notes during the PEC meeting</strong> in PEC Meeting Notes.
+</div>
+<div class="step">
+  <span class="n">4</span>
+  <strong>You get an email</strong> with what was raised at the PEC, feedback on your minutes, and what Jorge committed to follow up on.
+</div>
+
+<div class="callout">
+  <p>
+    <strong>No email is ever sent automatically.</strong> The portal prepares a draft in Jorge's
+    own mail app; he reads it and presses send. Ms. Francis can be copied when you both decide
+    it is useful.
+  </p>
+</div>
+
+<!-- ======================================================== SECTION 7 -->
+<h2>7. Backing up your work</h2>
+
+<p>
+  Because changes are saved in your browser for now, please back them up. Open
+  <strong>Backup &amp; Data</strong> and press <strong>Download backup</strong>. That produces a
+  single file containing every date, owner, budget and note you have set. Keep it in the PSC
+  shared Drive.
+</p>
+
+<p>
+  On another computer, or after clearing your browser, press <strong>Restore from backup</strong>
+  and choose that file to get everything back.
+</p>
+
+<div class="callout green">
+  <p>
+    <strong>Coming next.</strong> The groundwork for a shared database is already in place. Once
+    it is switched on, you and Jorge will sign in with your email addresses and see each other's
+    changes immediately — no more backup files. Nothing you enter now is lost in that move.
+  </p>
+</div>
+
+<!-- ======================================================== SECTION 8 -->
+<h2>8. A note on privacy</h2>
+
+<p>
+  The portal stores <strong>names and roles only</strong>. No parent email addresses and no phone
+  numbers are held in it. Those stay in the PSC Contact List on the shared Drive, where access is
+  already controlled. That is a deliberate choice: it means the portal link can be shared with the
+  committee without circulating anyone's personal details.
+</p>
+
+<h2>9. If something looks wrong</h2>
+
+<p>
+  Tell Jorge — particularly if a date was rolled forward incorrectly, an owner is wrong, or an
+  event is missing. The seeded content came from the minutes and the Drive, so a gap in either
+  becomes a gap here, and it is easily corrected.
+</p>
+
+<div class="callout green">
+  <p style="margin-bottom:0">
+    <strong>Where to start.</strong> Open <em>Year Calendar</em>, work down the autumn events, and
+    confirm the dates you already know. That single pass turns the calendar from a proposal into
+    the committee's plan for the year.
+  </p>
+</div>
+
+</body>
+</html>

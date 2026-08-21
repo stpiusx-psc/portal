@@ -119,3 +119,9 @@ Seeded content lives in the repo. What a volunteer changes is stored separately 
 an **override** keyed by event id, then merged on top. Improving a playbook in code
 never overwrites somebody's edited date or budget, and *Reset to original* on any
 event drops just that override.
+
+## Documentation
+
+`docs/SPX-PSC-Portal-User-Guide.pdf` is the guide for the PSC chair. It is generated
+from `docs/user-manual.html` and the screenshots in `docs/img/`, so it can be
+regenerated after a UI change by printing that page to PDF.
