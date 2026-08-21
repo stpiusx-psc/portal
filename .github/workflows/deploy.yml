@@ -2,9 +2,14 @@ name: Build and deploy to GitHub Pages
 
 on:
   push:
-    # The portal deploys from the development branch too, so the committee has a
-    # working URL before the branch is merged.
-    branches: [main, claude/psc-pec-reports-portal-trwzfh]
+    # The portal deploys from the development branches too, so the committee has
+    # a working URL before the work is merged. Every branch that should publish
+    # has to be listed here: a push to an unlisted branch deploys nothing and
+    # silently leaves whatever was published last on the live URL.
+    branches:
+      - main
+      - claude/psc-pec-reports-portal-trwzfh
+      - claude/psc-portal-handoff-4nowh8
   workflow_dispatch:
 
 permissions:
@@ -31,6 +36,13 @@ jobs:
       # know its base path. Derived from GITHUB_REPOSITORY rather than the event
       # payload, so it also works for a manual run. Change this to "/" if the
       # portal later moves to a custom domain served from the root.
+      #
+      # The base path is baked into the published bundle, so renaming or
+      # transferring the repository ALWAYS has to be followed by a fresh run of
+      # this workflow. Until it is, the live site still serves index.html asking
+      # for /<old-name>/assets/..., every asset 404s and the page renders blank
+      # white with no error on screen. That is what happened after the move to
+      # stpiusx-psc/portal.
       - name: Work out the base path
         run: echo "VITE_BASE_PATH=/${GITHUB_REPOSITORY#*/}/" >> "$GITHUB_ENV"
 

@@ -89,10 +89,19 @@ it to `/` if the portal later moves to a custom domain served from the root.
 
 ### If the repository moves
 
-Transferring or renaming the repository changes the published URL. Three things
-then need updating: the Supabase **Redirect URLs** allow-list (otherwise password
-resets land in whichever app owns the project's Site URL), the URL on the cover of
-`docs/user-manual.html`, and `docs/invitation-email-draft.md`.
+Transferring or renaming the repository changes the published URL. Four things
+then need doing, the first of them urgently:
+
+1. **Re-run the deploy workflow.** The base path is compiled into the published
+   bundle, so until the workflow runs again under the new name the live site
+   still asks for `/<old-name>/assets/...`. Those requests 404, and the page
+   renders **blank white with nothing in the console to point at the cause** —
+   it looks like the site is down rather than misaddressed. A push to a
+   deploying branch, or a manual run, fixes it.
+2. The Supabase **Redirect URLs** allow-list — otherwise password resets land in
+   whichever app owns the project's Site URL.
+3. The URL on the cover of `docs/user-manual.html`.
+4. `docs/invitation-email-draft.md`.
 
 ## Accounts and access
 
