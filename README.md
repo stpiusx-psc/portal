@@ -87,6 +87,12 @@ The workflow derives `VITE_BASE_PATH` from the repository name, so the same
 bundle works from any project subpath (`/portal/`) without editing anything. Set
 it to `/` if the portal later moves to a custom domain served from the root.
 
+**Only the default branch can publish.** The `github-pages` environment refuses
+deployments from anything else, and it refuses them before the job starts — no
+steps, no log, just a red run. The `deploy` job therefore checks the ref and
+skips itself elsewhere, so a feature-branch push ends green with `build` doing
+duty as a type-check. To change which branch is live, change the default branch.
+
 ### If the repository moves
 
 Transferring or renaming the repository changes the published URL. Four things
@@ -96,8 +102,8 @@ then need doing, the first of them urgently:
    bundle, so until the workflow runs again under the new name the live site
    still asks for `/<old-name>/assets/...`. Those requests 404, and the page
    renders **blank white with nothing in the console to point at the cause** —
-   it looks like the site is down rather than misaddressed. A push to a
-   deploying branch, or a manual run, fixes it.
+   it looks like the site is down rather than misaddressed. A push to the
+   default branch, or a manual run, fixes it.
 2. The Supabase **Redirect URLs** allow-list — otherwise password resets land in
    whichever app owns the project's Site URL.
 3. The URL on the cover of `docs/user-manual.html`.
