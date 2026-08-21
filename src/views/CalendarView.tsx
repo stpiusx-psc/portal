@@ -11,7 +11,7 @@ import { downloadCsv, downloadIcs, downloadText, eventsToCsv, eventsToText, prin
 import { EventEditor } from '../components/EventEditor'
 
 type Detail = 'summary' | 'standard' | 'full'
-type Layout = 'grid' | 'list'
+type Layout = 'grid' | 'list' | 'year'
 
 export function CalendarView({ store }: { store: Store }) {
   const [grain, setGrain] = useState<Grain>('year')
@@ -70,8 +70,35 @@ export function CalendarView({ store }: { store: Store }) {
     return map
   }, [visible, current.months])
 
-  const inRange = useMemo(() => current.months.flatMap((m) => byMonth.get(m) ?? []), [byMonth, current.months])
-  const rangeTitle = `PSC Calendar · ${current.label}`
+  /**
+   * "Year at a glance" is annual by definition, so it ignores the range
+   * selector and always covers the whole school year.
+   */
+  const isYear = layout === 'year'
+  const yearMonths = useMemo(() => schoolYearMonths(store.schoolYear), [store.schoolYear])
+
+  const yearByMonth = useMemo(() => {
+    const map = new Map<string, PscEvent[]>()
+    for (const m of yearMonths) map.set(m, [])
+    for (const e of visible) {
+      const key = e.date ? monthKeyOf(e.date) : e.monthHint
+      if (!key || !map.has(key)) continue
+      map.get(key)!.push(e)
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => (a.date ?? '9999').localeCompare(b.date ?? '9999') || a.name.localeCompare(b.name))
+    }
+    return map
+  }, [visible, yearMonths])
+
+  const shownMonths = isYear ? yearMonths : current.months
+  const shownByMonth = isYear ? yearByMonth : byMonth
+
+  const inRange = useMemo(
+    () => shownMonths.flatMap((m) => shownByMonth.get(m) ?? []),
+    [shownByMonth, shownMonths],
+  )
+  const rangeTitle = isYear ? `PSC Calendar · ${store.schoolYear} at a glance` : `PSC Calendar · ${current.label}`
 
   const undated = inRange.filter((e) => !e.date)
   const unconfirmed = inRange.filter((e) => e.dateConfidence !== 'confirmed').length
@@ -104,7 +131,7 @@ export function CalendarView({ store }: { store: Store }) {
         <PrintHead title={rangeTitle} subtitle={`${inRange.length} activities · detail level: ${detail}`} />
 
         <div className="toolbar no-print">
-          <label className="field">
+          {!isYear && <label className="field">
             <span>Range</span>
             <select
               value={grain}
@@ -115,9 +142,9 @@ export function CalendarView({ store }: { store: Store }) {
               <option value="semester">Term (5 months)</option>
               <option value="year">Full year</option>
             </select>
-          </label>
+          </label>}
 
-          {allBuckets.length > 1 && (
+          {!isYear && allBuckets.length > 1 && (
             <label className="field grow">
               <span>Period</span>
               <select value={activeIdx} onChange={(e) => { setBucketIdx(Number(e.target.value)); setBucketTouched(true) }}>
@@ -157,6 +184,7 @@ export function CalendarView({ store }: { store: Store }) {
             <select value={layout} onChange={(e) => setLayout(e.target.value as Layout)}>
               <option value="grid">Month grid</option>
               <option value="list">Agenda list</option>
+              <option value="year">Year at a glance</option>
             </select>
           </label>
         </div>
@@ -171,7 +199,38 @@ export function CalendarView({ store }: { store: Store }) {
           </Banner>
         )}
 
-        <div className="grid" style={{ gridTemplateColumns: layout === 'grid' && current.months.length > 1 ? 'repeat(auto-fit, minmax(330px, 1fr))' : '1fr' }}>
+        {isYear ? (
+          <div className="yr">
+            {yearMonths.map((m) => {
+              const events = yearByMonth.get(m) ?? []
+              return (
+                <div className="yr-month" key={m}>
+                  <h3>
+                    {formatMonthKey(m)}
+                    <span className="cnt">{events.length || '—'}</span>
+                  </h3>
+                  {events.length === 0 ? (
+                    <div className="yr-empty">Nothing scheduled</div>
+                  ) : (
+                    <div className="yr-list">
+                      {events.map((e) => (
+                        <div className={`yr-row cat-${e.category}`} key={e.id}>
+                          <span className="d">{e.date ? Number(e.date.slice(8)) : 'TBD'}</span>
+                          <span className="dot" aria-hidden />
+                          <button className="n" onClick={() => setEditing(e)} title={whenLabel(e)}>
+                            {e.name}
+                            {e.dateConfidence !== 'confirmed' && <span className="prop"> (proposed)</span>}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+        <div className="grid" style={{ gridTemplateColumns: layout === 'grid' && current.months.length > 1 ? 'repeat(auto-fit, minmax(330px, 1fr))' : 'minmax(0, 1fr)' }}>
           {current.months.map((m) => {
             const events = byMonth.get(m) ?? []
             return (
@@ -249,8 +308,11 @@ export function CalendarView({ store }: { store: Store }) {
             )
           })}
         </div>
+        )}
 
-        {undated.length > 0 && (
+        {/* The annual view already lists a dateless event under its month, marked
+            TBD, so repeating them all in a card underneath is just noise there. */}
+        {!isYear && undated.length > 0 && (
           <div className="card" style={{ marginTop: 18 }}>
             <div className="card-head"><h2>Month known, date still to set ({undated.length})</h2></div>
             <div className="month-list">

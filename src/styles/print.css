@@ -7,8 +7,22 @@
   .sidebar, .topbar, .no-print, .tabs, .toolbar { display: none !important; }
   .shell { display: block; }
   .content { padding: 0; max-width: none; }
+  .shell, .content, .grid, .yr { overflow: visible !important; }
   .card, .cal-month, .report-out, .stat { box-shadow: none; border-color: #bbb; break-inside: avoid; }
   .cal-month { break-inside: avoid; margin-bottom: 8mm; }
+  /* The day grid is the layout that overflows a portrait page: seven columns of
+     dated cells plus wrapped event names. Shrink the type rather than let it
+     spill off the right edge, and never split a month across two pages. */
+  .cal-grid { font-size: 8pt; }
+  .cal-ev { font-size: 7.5pt; padding: 1px 2px; }
+  .cal-cell { min-height: 12mm; }
+  /* Year at a glance is meant to be the printable one: three columns of compact
+     month blocks, which fits a school year on a page or two. */
+  .yr { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5mm; }
+  .yr-month { break-inside: avoid; border-color: #bbb; }
+  .yr-month > h3 { background: #0f4c35 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 9pt; }
+  .yr-row { font-size: 8.5pt; }
+  .yr-row .dot { display: none; }
   .cal-month h3 { background: #0f4c35 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   table.tbl th { background: #eef4f1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .chip { border: 1px solid #999; background: #fff !important; color: #333 !important; }

@@ -151,9 +151,14 @@ table.tbl tbody tr:hover { background: var(--spx-green-50); }
 .cal-month { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
 .cal-month h3 { padding: 11px 16px; background: var(--spx-green-800); color: #fff; font-size: 14px; display: flex; align-items: center; }
 .cal-month h3 .cnt { margin-left: auto; font-weight: 500; font-size: 12px; opacity: .85; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+/* minmax(0, 1fr) rather than 1fr: a grid track refuses to shrink below its
+   content's minimum width, so one long event name ("Kindergarten & Families
+   Potluck and Play") in a 47px day cell widened its whole column, widened the
+   month card, and pushed the entire page into horizontal overflow — which is
+   what clipped Saturday on screen and cut the right edge off the PDF. */
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .cal-dow { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); text-align: center; padding: 6px 0; border-bottom: 1px solid var(--line); font-weight: 600; }
-.cal-cell { min-height: 74px; border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); padding: 4px 5px; }
+.cal-cell { min-height: 74px; min-width: 0; border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); padding: 4px 5px; }
 .cal-cell:nth-child(7n) { border-right: 0; }
 .cal-cell.empty { background: #fafcfb; }
 .cal-cell .d { font-size: 11px; color: var(--ink-faint); font-weight: 600; display: inline-block; }
@@ -163,6 +168,10 @@ table.tbl tbody tr:hover { background: var(--spx-green-50); }
   font-size: 11px; line-height: 1.3; padding: 3px 5px; border-radius: 4px;
   background: var(--cat-bg); color: var(--cat); border: 0; cursor: pointer;
   border-left: 2px solid var(--cat); font-weight: 500;
+  /* A day cell is about 45px wide, narrower than plenty of single words, so
+     long names have to be allowed to break mid-word. The full name is on the
+     button's title attribute either way. */
+  overflow-wrap: anywhere; word-break: break-word;
 }
 .cal-ev:hover { filter: brightness(.96); }
 .cal-ev.proposed { border-left-style: dotted; }
@@ -305,3 +314,24 @@ ul.plain li { margin-bottom: 5px; }
 .owner-select:focus { border-color: var(--spx-green-600); background: var(--surface); }
 .owner-select.unassigned { color: var(--warn); font-style: italic; }
 .prep-row .owner { margin-left: auto; flex: 0 0 auto; }
+
+/* Year at a glance: twelve compact month blocks, no day grid. Built to be
+   read on one screen and to print on one or two pages, which the day-grid
+   layout cannot do for a whole school year. */
+.yr { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.yr-month { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; break-inside: avoid; }
+.yr-month > h3 {
+  display: flex; align-items: baseline; gap: 8px; padding: 7px 12px;
+  background: var(--spx-green-800); color: #fff; font-size: 12.5px;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.yr-month > h3 .cnt { margin-left: auto; font-weight: 500; opacity: .85; letter-spacing: 0; text-transform: none; }
+.yr-list { padding: 6px 12px 9px; }
+.yr-row { display: flex; gap: 9px; align-items: baseline; padding: 3px 0; font-size: 12.5px; line-height: 1.35; }
+.yr-row + .yr-row { border-top: 1px solid var(--line-soft); }
+.yr-row .d { flex: 0 0 34px; color: var(--ink-faint); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 11.5px; }
+.yr-row .n { flex: 1; min-width: 0; text-align: left; background: 0; border: 0; padding: 0; cursor: pointer; color: var(--ink); font: inherit; }
+.yr-row .n:hover { text-decoration: underline; }
+.yr-row .n .prop { color: var(--ink-faint); font-style: italic; font-size: 11px; white-space: nowrap; }
+.yr-row .dot { flex: 0 0 6px; height: 6px; border-radius: 50%; background: var(--cat); margin-top: 5px; }
+.yr-empty { padding: 8px 12px 11px; color: var(--ink-faint); font-size: 12px; font-style: italic; }
