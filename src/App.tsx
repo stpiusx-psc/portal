@@ -10,7 +10,7 @@ import { PecMeetingView } from './views/PecMeetingView'
 import { TeamView } from './views/TeamView'
 import { DataView } from './views/DataView'
 import { MembersView } from './views/MembersView'
-import { NoAccess, SignIn } from './views/SignIn'
+import { NoAccess, SetNewPassword, SignIn } from './views/SignIn'
 
 export type Route =
   | { view: 'dashboard' }
@@ -78,6 +78,8 @@ function Gate() {
       )
     }
     if (!auth.session) return <SignIn />
+    // A recovery session must set a new password before anything else.
+    if (auth.recovery) return <SetNewPassword />
     if (!auth.member) return <NoAccess />
   }
 

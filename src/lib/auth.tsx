@@ -5,6 +5,8 @@ import { REMOTE_ENABLED, supabase, type Member, type MemberRole } from './supaba
 interface AuthState {
   /** Still working out whether somebody is signed in. */
   loading: boolean
+  /** True after arriving from a password-reset email, until a new one is set. */
+  recovery: boolean
   session: Session | null
   email: string | null
   /** The row from psc_members, or null if this account is not on the roster. */
@@ -15,6 +17,7 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<string | null>
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null; needsConfirmation: boolean }>
   resetPassword: (email: string) => Promise<string | null>
+  updatePassword: (password: string) => Promise<string | null>
   signOut: () => Promise<void>
 }
 
@@ -28,6 +31,8 @@ function friendly(message: string): string {
   if (m.includes('already registered') || m.includes('already been registered')) return 'There is already an account for that email. Sign in instead, or reset your password.'
   if (m.includes('password should be at least')) return 'Please choose a password of at least 6 characters.'
   if (m.includes('rate limit') || m.includes('too many')) return 'Too many attempts. Please wait a minute and try again.'
+  if (m.includes('same as the old') || m.includes('should be different')) return 'Please choose a password different from your current one.'
+  if (m.includes('expired') || m.includes('invalid') && m.includes('token')) return 'That link has expired. Request a new password reset and use the newest email.'
   if (m.includes('failed to fetch') || m.includes('network')) return 'Could not reach the server. Check your internet connection and try again.'
   return message
 }
@@ -36,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(REMOTE_ENABLED)
   const [session, setSession] = useState<Session | null>(null)
   const [member, setMember] = useState<Member | null>(null)
+  const [recovery, setRecovery] = useState(false)
 
   useEffect(() => {
     if (!supabase) return
@@ -47,7 +53,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     })
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((evt, s) => {
+      // Arriving from a reset email signs the user in with a short-lived
+      // recovery session. Hold them on the "choose a new password" screen
+      // rather than dropping them into the portal with nothing changed.
+      if (evt === 'PASSWORD_RECOVERY') setRecovery(true)
+      if (evt === 'SIGNED_OUT') setRecovery(false)
       setSession(s)
       setLoading(false)
     })
@@ -95,21 +106,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error ? friendly(error.message) : null
   }, [])
 
+  const updatePassword = useCallback(async (password: string) => {
+    if (!supabase) return 'This build has no server configured.'
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) return friendly(error.message)
+    setRecovery(false)
+    return null
+  }, [])
+
   const signOut = useCallback(async () => {
     await supabase?.auth.signOut()
     setMember(null)
+    setRecovery(false)
   }, [])
 
   const value = useMemo<AuthState>(() => ({
     loading,
+    recovery,
     session,
     email,
     member,
     role: member?.role ?? null,
     canEdit: member?.role === 'admin' || member?.role === 'editor',
     isAdmin: member?.role === 'admin',
-    signIn, signUp, resetPassword, signOut,
-  }), [loading, session, email, member, signIn, signUp, resetPassword, signOut])
+    signIn, signUp, resetPassword, updatePassword, signOut,
+  }), [loading, recovery, session, email, member, signIn, signUp, resetPassword, updatePassword, signOut])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

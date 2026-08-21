@@ -118,6 +118,63 @@ export function SignIn() {
   )
 }
 
+/**
+ * Shown after arriving from a password-reset email. The recovery session is
+ * short-lived, so the new password has to be set here and now.
+ */
+export function SetNewPassword() {
+  const auth = useAuth()
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const submit = async (ev: React.FormEvent) => {
+    ev.preventDefault()
+    setError(null)
+    if (password.length < 6) { setError('Please choose a password of at least 6 characters.'); return }
+    if (password !== confirm) { setError('The two passwords do not match.'); return }
+    setBusy(true)
+    const err = await auth.updatePassword(password)
+    setBusy(false)
+    if (err) setError(err)
+  }
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-brand">
+          <div className="brand-crest" aria-hidden>SPX</div>
+          <h1>Choose a new password</h1>
+          <p>{auth.email}</p>
+        </div>
+
+        {error && <div className="callout warn" style={{ marginBottom: 16 }}>{error}</div>}
+
+        <form onSubmit={submit}>
+          <label className="field">
+            <span>New password</span>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" required minLength={6} autoFocus />
+            <span className="hint">At least 6 characters.</span>
+          </label>
+          <label className="field">
+            <span>Confirm new password</span>
+            <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" required minLength={6} />
+          </label>
+          <button className="btn btn-primary" type="submit" disabled={busy} style={{ width: '100%', justifyContent: 'center', padding: '10px' }}>
+            {busy ? 'Saving…' : 'Save my new password'}
+          </button>
+        </form>
+
+        <div className="auth-links">
+          <button className="linkish" onClick={() => void auth.signOut()}>Cancel and sign out</button>
+        </div>
+      </div>
+      <div className="auth-motto">Reverence · Respect · Responsibility</div>
+    </div>
+  )
+}
+
 /** Signed in, but not on the psc_members roster. */
 export function NoAccess() {
   const auth = useAuth()
