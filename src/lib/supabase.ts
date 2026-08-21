@@ -27,3 +27,17 @@ export interface Member {
   display_name: string | null
   role: MemberRole
 }
+
+/**
+ * Whether an authorised person has actually got in yet. Comes from the
+ * psc_member_status() function rather than a table, because it reads
+ * auth.users, which the client cannot query directly. Administrators only —
+ * anybody else gets an empty result.
+ */
+export interface MemberStatus {
+  email: string
+  has_account: boolean
+  email_confirmed: boolean
+  account_created_at: string | null
+  last_sign_in_at: string | null
+}

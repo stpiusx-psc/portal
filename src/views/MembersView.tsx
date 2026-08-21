@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../lib/auth'
-import { REMOTE_ENABLED, supabase, type Member, type MemberRole } from '../lib/supabase'
+import { REMOTE_ENABLED, supabase, type Member, type MemberRole, type MemberStatus } from '../lib/supabase'
 import { Banner, Chip, Empty } from '../components/ui'
 
 /** Where the portal lives, for the invitation text. */
@@ -28,10 +28,36 @@ function invitationText(name: string | null, email: string): string {
   ].join('\n')
 }
 
+/** A timestamp from the database, as a person would say it. */
+function whenText(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleString(undefined, {
+    day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
+  })
+}
+
 const ROLE_HELP: Record<MemberRole, string> = {
   admin: 'Full access, and can invite or remove people.',
   editor: 'Can change dates, owners, budgets, reports and notes.',
   viewer: 'Can see everything but change nothing.',
+}
+
+/**
+ * How far along somebody is: authorised but absent, signed up but not yet
+ * confirmed, or in. "Never" is the useful state — it is the difference between
+ * an invitation that worked and one that needs chasing.
+ */
+function signedInCell(s: MemberStatus | undefined) {
+  if (!s || !s.has_account) return <Chip tone="warn">Never</Chip>
+  if (!s.email_confirmed) return <Chip tone="warn">Email not confirmed</Chip>
+  return (
+    <span title={s.last_sign_in_at ? `Last seen ${whenText(s.last_sign_in_at)}` : undefined}>
+      <Chip tone="ok">Yes</Chip>
+      {s.account_created_at && (
+        <span className="hint" style={{ display: 'block' }}>since {whenText(s.account_created_at)}</span>
+      )}
+    </span>
+  )
 }
 
 /**
@@ -42,6 +68,7 @@ const ROLE_HELP: Record<MemberRole, string> = {
 export function MembersView() {
   const auth = useAuth()
   const [members, setMembers] = useState<Member[]>([])
+  const [status, setStatus] = useState<Record<string, MemberStatus>>({})
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -67,6 +94,15 @@ export function MembersView() {
       .order('role')
     if (error) setMsg({ tone: 'warn', text: `Could not load the list: ${error.message}` })
     else setMembers((data as Member[]) ?? [])
+
+    // Who has actually signed in. A failure here is not worth an error banner:
+    // the roster is the point of this screen and it has already loaded, so the
+    // column just stays quiet.
+    const { data: rows } = await supabase.rpc('psc_member_status')
+    const byEmail: Record<string, MemberStatus> = {}
+    for (const r of (rows as MemberStatus[]) ?? []) byEmail[r.email] = r
+    setStatus(byEmail)
+
     setLoading(false)
   }, [])
 
@@ -206,7 +242,7 @@ export function MembersView() {
             <div className="tbl-wrap">
               <table className="tbl">
                 <thead>
-                  <tr><th>Email</th><th>Name</th><th style={{ width: 210 }}>Access level</th><th style={{ width: 210 }}></th></tr>
+                  <tr><th>Email</th><th>Name</th><th style={{ width: 190 }}>Signed in</th><th style={{ width: 210 }}>Access level</th><th style={{ width: 210 }}></th></tr>
                 </thead>
                 <tbody>
                   {members.map((m) => {
@@ -219,6 +255,7 @@ export function MembersView() {
                           {lastInvited === m.email && <> <Chip tone="warn">not notified yet</Chip></>}
                         </td>
                         <td>{m.display_name ?? '—'}</td>
+                        <td>{signedInCell(status[m.email])}</td>
                         <td>
                           <select
                             value={m.role}
