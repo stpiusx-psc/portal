@@ -49,8 +49,11 @@ export function Empty({ icon, title, children }: { icon: string; title: string; 
   )
 }
 
-export function Banner({ tone = 'info', children }: { tone?: 'info' | 'warn'; children: ReactNode }) {
-  return <div className={`banner banner-${tone}`}>{children}</div>
+export function Banner(
+  { tone = 'info', className, children }:
+  { tone?: 'info' | 'warn'; className?: string; children: ReactNode },
+) {
+  return <div className={`banner banner-${tone}${className ? ` ${className}` : ''}`}>{children}</div>
 }
 
 export function Stat({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }) {

@@ -128,7 +128,9 @@ export function CalendarView({ store }: { store: Store }) {
       </header>
 
       <div className="content">
-        <PrintHead title={rangeTitle} subtitle={`${inRange.length} activities · detail level: ${detail}`} />
+        {/* The detail level is a control on this screen, not a fact about the
+            document, so it does not belong on a printed page either. */}
+        <PrintHead title={rangeTitle} subtitle={`${inRange.length} activities`} />
 
         <div className="toolbar no-print">
           {!isYear && <label className="field">
@@ -189,8 +191,13 @@ export function CalendarView({ store }: { store: Store }) {
           </label>
         </div>
 
+        {/* Internal control only. An exported PDF is something a parent or the
+            principal may read, and a running count of what the committee has not
+            pinned down yet is nobody else's business — the per-event "(proposed)"
+            label is what actually protects a reader from taking a guess as
+            agreed, and that stays in print. */}
         {unconfirmed > 0 && (
-          <Banner tone="warn">
+          <Banner tone="warn" className="no-print">
             <span>
               <strong>{unconfirmed} dates in this range are not confirmed.</strong>{' '}
               They were rolled forward from 2025-26. Confirm each one with Ms. Francis, then mark it confirmed so the
