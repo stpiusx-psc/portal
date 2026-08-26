@@ -10,11 +10,17 @@ export const DRIVE_ROOT = folder('1JdU9kNDjTZkHDR13oV0Yw21b5zTKHgFt')
 /**
  * 2026-27 event calendar.
  *
- * Dates marked `proposed` were rolled forward from the 2025-26 actuals recorded
- * in the PSC minutes (the equivalent weekday of the equivalent week). They must
- * be agreed with Ms. Francis before they are treated as real. `priorYearDate`
- * always records what the date actually was last year so the roll-forward can
- * be checked.
+ * Where the school's own calendar names an event, its date comes from there:
+ * "SPX Calendar for the 2026-2027 School Year (Tentative)", updated 24 June
+ * 2026. That document is a far better source than a roll-forward, but it is
+ * titled Tentative and says in as many words that the dates are subject to
+ * change, so those events stay `proposed` rather than `confirmed`. Only Ms.
+ * Francis saying so makes a date real.
+ *
+ * The rest were rolled forward from the 2025-26 actuals recorded in the PSC
+ * minutes (the equivalent weekday of the equivalent week), and are `proposed`
+ * for the older reason: nobody has agreed them at all. `priorYearDate` always
+ * records what the date actually was last year, so either kind can be checked.
  *
  * Budgets are left undefined where the PSC has never formally set one — the
  * portal is where they now get set. `actuals` carries the real prior-year
@@ -27,7 +33,7 @@ export const EVENTS: PscEvent[] = [
     name: 'Kindergarten & Families Potluck and Play',
     category: 'community',
     status: 'active',
-    date: '2026-09-11',
+    date: '2026-09-15',
     dateConfidence: 'proposed',
     priorYearDate: 'Early September 2025',
     mainResp: ['Ana Luisa Martinez'],
@@ -62,7 +68,7 @@ export const EVENTS: PscEvent[] = [
     category: 'community',
     status: 'active',
     majorEvent: true,
-    date: '2026-09-17',
+    date: '2026-09-25',
     dateConfidence: 'proposed',
     priorYearDate: 'Mid/late September 2025 (pre-orders to Vera’s Wed 17 Sept)',
     mainResp: ['Lynda Freeman', 'Stephanie Toves'],
@@ -183,8 +189,9 @@ export const EVENTS: PscEvent[] = [
     category: 'fundraiser',
     status: 'active',
     majorEvent: true,
-    date: '2026-10-02',
+    date: '2026-09-28',
     dateConfidence: 'proposed',
+    endDate: '2026-10-02',
     priorYearDate: 'Early October 2025 (donations closed Oct 15)',
     mainResp: ['Lynda Freeman'],
     supportResp: ['Julie Hogarth', 'Vivian Bopp'],
@@ -275,7 +282,7 @@ export const EVENTS: PscEvent[] = [
     category: 'fundraiser',
     status: 'active',
     majorEvent: true,
-    date: '2026-11-22',
+    date: '2026-11-29',
     dateConfidence: 'proposed',
     priorYearDate: '2025-11-23 (Sunday)',
     mainResp: ['Lynda Freeman'],
@@ -392,9 +399,9 @@ export const EVENTS: PscEvent[] = [
     name: 'Scholastic Book Fair',
     category: 'school-support',
     status: 'active',
-    date: '2026-11-23',
-    endDate: '2026-11-27',
-    dateConfidence: 'proposed',
+    date: null,
+    dateConfidence: 'tbd',
+    monthHint: '2026-11',
     priorYearDate: '2025-11-23 to 25 & 27; set up Nov 21, take down Nov 28',
     mainResp: ['Jennifer Dales'],
     needsVolunteers: true,
@@ -416,9 +423,10 @@ export const EVENTS: PscEvent[] = [
     name: 'Intermediate Speech Arts',
     category: 'school-support',
     status: 'active',
-    date: null,
-    monthHint: '2026-11',
-    dateConfidence: 'tbd',
+    date: '2027-02-01',
+    endDate: '2027-02-05',
+    dateConfidence: 'proposed',
+    monthHint: '2027-02',
     priorYearDate: 'November (Wk 3)',
     mainResp: ['Diana Martins-Garbutt'],
     needsVolunteers: true,
@@ -456,7 +464,7 @@ export const EVENTS: PscEvent[] = [
     name: 'Parent–Teacher Interviews',
     category: 'school-support',
     status: 'active',
-    date: '2026-12-04',
+    date: '2026-11-06',
     dateConfidence: 'proposed',
     priorYearDate: '2025-12-05',
     mainResp: ['Miss C. Francis'],
@@ -509,9 +517,10 @@ export const EVENTS: PscEvent[] = [
     name: 'Primary Speech Arts',
     category: 'school-support',
     status: 'active',
-    date: null,
-    monthHint: '2027-02',
-    dateConfidence: 'tbd',
+    date: '2027-01-18',
+    endDate: '2027-01-22',
+    dateConfidence: 'proposed',
+    monthHint: '2027-01',
     priorYearDate: 'February',
     mainResp: ['Diana Martins-Garbutt'],
     needsVolunteers: true,
@@ -539,7 +548,7 @@ export const EVENTS: PscEvent[] = [
     name: 'AGM Wine & Cheese',
     category: 'governance',
     status: 'active',
-    date: '2027-02-18',
+    date: '2027-03-03',
     dateConfidence: 'proposed',
     priorYearDate: 'February (Wk 3)',
     mainResp: ['Eileen Wilson'],
@@ -752,7 +761,7 @@ export const EVENTS: PscEvent[] = [
     name: 'Sports Day',
     category: 'school-support',
     status: 'active',
-    date: '2027-06-11',
+    date: '2027-06-18',
     dateConfidence: 'proposed',
     priorYearDate: '2025-06-13',
     mainResp: ['Julie Hogarth'],
@@ -769,7 +778,7 @@ export const EVENTS: PscEvent[] = [
     name: 'Grade 7 Graduation Reception',
     category: 'community',
     status: 'active',
-    date: '2027-06-18',
+    date: '2027-06-25',
     dateConfidence: 'proposed',
     priorYearDate: '2025-06-20',
     mainResp: ['Olivia Matthews'],
