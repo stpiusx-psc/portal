@@ -275,6 +275,20 @@ export const EVENTS: PscEvent[] = [
     lessons: ['Decision made October 2025: do not repeat. Revisit only if someone brings a materially different plan.'],
     docs: [{ title: 'Costume sale PAD form', url: file('1H161OzNw7CeTbxEddSHNK8R_SZ5yAxQU'), kind: 'form' }],
   },
+  {
+    id: 'halloween-festivities',
+    name: "Hallowe'en Festivities",
+    category: 'community',
+    status: 'active',
+    date: '2026-10-30',
+    dateConfidence: 'proposed',
+    mainResp: [],
+    needsVolunteers: false,
+    summary: "On the school's calendar for 30 October. What the PSC does for it, if anything, has not been recorded.",
+    description:
+      "Added from the school's tentative 2026-27 calendar, which is the only thing we have on it: one line reading \"30 Hallowe'en Festivities\". No owner, no budget, no run sheet, and no note in the PSC minutes about the committee's part in it — so none of that is filled in here rather than guessed at. Worth asking Ms. Francis whether the PSC is expected to contribute before anybody plans around it.\n\nNote that this is NOT the Costume Sale, which the PSC discontinued in October 2025 and which is kept on the record separately.",
+    lessons: ["Nothing recorded yet — this is a placeholder built from the school calendar, not from PSC experience."],
+  },
   // ----------------------------------------------------------------- NOVEMBER
   {
     id: 'christmas-craft-fair',
@@ -834,6 +848,29 @@ export const EVENTS: PscEvent[] = [
     summary: 'Branded t-shirts and crew necks, pre-ordered and collected at Family Fun Night.',
     description: 'Orders are placed on a form, bagged by family and handed over at the merchandise table during Family Fun Night. Remaining stock goes to the school office to be sold later. New purchases on the night require a PAD form.',
     docs: [{ title: '2027 Merchandise order form', url: file('1ywcdRtQb_w5Y1plNjZ92myb6CH7N7mwP'), kind: 'form' }],
+  },
+  {
+    id: 'spring-social-fundraiser',
+    name: 'Spring Social Fundraiser',
+    category: 'fundraiser',
+    status: 'active',
+    date: null,
+    monthHint: '2027-04',
+    dateConfidence: 'tbd',
+    mainResp: [],
+    needsVolunteers: false,
+    summary: "On the school's calendar for April with no date set. Nothing else about it has been recorded.",
+    description:
+      "Added from the school's tentative 2026-27 calendar, which lists it as \"TBD Spring Social Fundraiser\" and says nothing more. No date, owner, budget or prior-year figures, so none are invented here.\n\nBefore planning it, settle whether this is actually a separate event. The school calendar lists Family Fun Night in May as its own line, and the PSC already runs an end-of-year social in June, so this may be a third event, or it may be the school's name for one of those.",
+    lessons: ["Nothing recorded yet — this is a placeholder built from the school calendar, not from PSC experience."],
+    docs: [
+      {
+        title: 'Spring Family Event (Drive folder)',
+        url: folder('1tG_fAN7zYz9-LJhSDkA3jGgma92DbfVb'),
+        kind: 'folder',
+        note: 'Named "Spring Family Event" on the Drive. Probably this event, but nobody has confirmed that.',
+      },
+    ],
   },
   // ------------------------------------------------------- ONGOING PROGRAMMES
   {
