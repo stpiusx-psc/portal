@@ -12,10 +12,10 @@ export function Dashboard({ store }: { store: Store }) {
     .sort((a, b) => a.date.localeCompare(b.date))
   const upcoming = dated.filter((e) => e.date >= today).slice(0, 6)
 
-  const nextPsc = store.meetings.filter((m) => m.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0]
+  const nextPsc = dated.filter((e) => e.id.startsWith('psc-20') && e.date >= today)[0]
 
   const needsDate = active.filter((e) => e.dateConfidence !== 'confirmed')
-  const needsOwner = active.filter((e) => e.mainResp.length === 0)
+  const needsOwner = active.filter((e) => e.needsVolunteers && e.mainResp.length === 0)
   const needsSignup = active.filter((e) => e.needsVolunteers && !e.signUpUrl)
 
   const budgeted = active.reduce((s, e) => s + (e.budget ?? 0), 0)
@@ -40,7 +40,7 @@ export function Dashboard({ store }: { store: Store }) {
           <Banner tone="warn">
             <span>
               <strong>{needsDate.length} of {active.length} events still have an unconfirmed date.</strong>{' '}
-              Dates were rolled forward from last year and need agreeing with Ms. Francis before they are shared with parents.
+              Some dates come from the school's tentative calendar; others still need agreeing with Ms. Francis. Check the event notes before sharing dates as final.
             </span>
             <span className="spacer" />
             <button className="btn btn-sm" onClick={() => navigate({ view: 'calendar' })}>Review calendar</button>
@@ -49,7 +49,7 @@ export function Dashboard({ store }: { store: Store }) {
 
         <div className="grid grid-3">
           <Stat label="Active events" value={active.length} sub={`${active.filter((e) => e.majorEvent).length} major events needing a committee`} />
-          <Stat label="Next PSC meeting" value={nextPsc ? formatLong(nextPsc.date) : '—'} sub={nextPsc ? `${nextPsc.time ?? ''} · ${nextPsc.location ?? ''}` : 'No meetings scheduled'} />
+          <Stat label="Next PSC meeting" value={nextPsc ? formatLong(nextPsc.date) : '—'} sub={nextPsc ? nextPsc.summary : 'No meetings scheduled'} />
           <Stat label="Budget assigned" value={money(budgeted)} sub={`${active.filter((e) => e.budget != null).length} events have a budget set`} />
           <Stat label="2025-26 net result" value={money(lastYearNet)} sub="Recorded actuals from the shared Drive" />
         </div>
