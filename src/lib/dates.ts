@@ -112,3 +112,9 @@ export function monthGrid(monthKey: string): (string | null)[][] {
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
   return weeks
 }
+
+/** Include a spanning event in each month it actually overlaps. */
+export function eventInMonth(e: { date: string | null; endDate?: string | null; monthHint?: string }, month: string): boolean {
+  if (!e.date) return e.monthHint === month
+  return e.date.slice(0, 7) <= month && (e.endDate ?? e.date).slice(0, 7) >= month
+}
