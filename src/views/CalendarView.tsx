@@ -94,8 +94,8 @@ export function CalendarView({ store }: { store: Store }) {
   const shownByMonth = isYear ? yearByMonth : byMonth
 
   const inRange = useMemo(
-    () => Array.from(new Map(shownMonths.flatMap((m) => shownByMonth.get(m) ?? []).map((e) => [e.id, e])).values()),
-    [shownByMonth, shownMonths],
+    () => Array.from(new Map([...shownMonths.flatMap((m) => shownByMonth.get(m) ?? []), ...visible.filter((e) => !e.date && !e.monthHint)].map((e) => [e.id, e])).values()),
+    [shownByMonth, shownMonths, visible],
   )
   const rangeTitle = isYear ? `PSC Calendar · ${store.schoolYear} at a glance` : `PSC Calendar · ${current.label}`
 
@@ -318,11 +318,11 @@ export function CalendarView({ store }: { store: Store }) {
 
         {/* The annual view already lists a dateless event under its month, marked
             TBD, so repeating them all in a card underneath is just noise there. */}
-        {!isYear && undated.length > 0 && (
+        {undated.some((e) => !isYear || !e.monthHint) && (
           <div className="card" style={{ marginTop: 18 }}>
-            <div className="card-head"><h2>Month known, date still to set ({undated.length})</h2></div>
+            <div className="card-head"><h2>Dates still to set ({undated.filter((e) => !isYear || !e.monthHint).length})</h2></div>
             <div className="month-list">
-              {undated.map((e) => (
+              {undated.filter((e) => !isYear || !e.monthHint).map((e) => (
                 <div className="month-row" key={e.id}>
                   <div className="when">{e.monthHint ? formatMonthKey(e.monthHint) : 'TBD'}</div>
                   <div className="what"><button className="linkish" onClick={() => setEditing(e)}>{e.name}</button></div>
