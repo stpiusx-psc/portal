@@ -1,4 +1,5 @@
 import type { PscEvent } from '../lib/types'
+import { MEETINGS } from './meetings'
 
 const file = (id: string) => `https://drive.google.com/file/d/${id}/view`
 const folder = (id: string) => `https://drive.google.com/drive/folders/${id}`
@@ -191,7 +192,7 @@ export const EVENTS: PscEvent[] = [
     majorEvent: true,
     date: '2026-09-28',
     dateConfidence: 'proposed',
-    endDate: '2026-10-02',
+    endDate: '2026-09-29',
     priorYearDate: 'Early October 2025 (donations closed Oct 15)',
     mainResp: ['Lynda Freeman'],
     supportResp: ['Julie Hogarth', 'Vivian Bopp'],
@@ -986,4 +987,29 @@ export const EVENTS: PscEvent[] = [
     ],
     lessons: ['The premium SignUpGenius late-cancellation rule was a 2025-26 improvement worth keeping.'],
   },
+  {
+    id: 'runathon-october',
+    name: 'Runathon - October sessions',
+    category: 'fundraiser', status: 'active',
+    date: '2026-10-01', endDate: '2026-10-02', dateConfidence: 'confirmed',
+    mainResp: ['Lynda Freeman', 'Julie Hogarth'],
+    supportResp: ['Kelsey Swanekamp'], needsVolunteers: true,
+    summary: 'October continuation of Run-a-thon. Run dates: September 28-29 and October 1-2. No run September 30; school closed.',
+    notes: 'Sources: September 15, 2026 PSC outputs and school tentative calendar updated June 24, 2026. Pledges due October 21. See Runathon playbook for preparation and finances.',
+  },
+  {
+    id: 'runathon-pledges-due',
+    name: 'Runathon pledges due',
+    category: 'fundraiser', status: 'active',
+    date: '2026-10-21', dateConfidence: 'proposed',
+    mainResp: [], needsVolunteers: false,
+    summary: 'Pledge deadline from the school tentative calendar, updated June 24, 2026. Subject to school bulletin updates.',
+  },
+  ...MEETINGS.map((m): PscEvent => ({
+    id: m.id, name: 'PSC Meeting', category: 'governance', status: 'active',
+    date: m.date, dateConfidence: 'confirmed',
+    mainResp: [], needsVolunteers: false,
+    summary: `${m.time} - ${m.location}. ${m.note ?? ''}`,
+    notes: 'Schedule recorded in September 15, 2026 PSC outputs. June social date remains TBD.',
+  })),
 ]

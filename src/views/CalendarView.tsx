@@ -4,7 +4,7 @@ import type { PscEvent } from '../lib/types'
 import { navigate } from '../App'
 import { Banner, Chip, ConfidenceChip, PrintHead, money, whenLabel } from '../components/ui'
 import {
-  DAY_SHORT, buckets, formatMonthKey, formatShort, monthGrid, monthKeyOf,
+  DAY_SHORT, eventInMonth, buckets, formatMonthKey, formatShort, monthGrid, monthKeyOf,
   schoolYearMonths, todayISO, type Grain,
 } from '../lib/dates'
 import { downloadCsv, downloadIcs, downloadText, eventsToCsv, eventsToText, printView } from '../lib/exporters'
@@ -34,8 +34,7 @@ export function CalendarView({ store }: { store: Store }) {
     const has = (months: string[]) =>
       store.events.some((e) => {
         if (e.status === 'discontinued') return false
-        const key = e.date ? monthKeyOf(e.date) : e.monthHint
-        return key ? months.includes(key) : false
+        return months.some((m) => eventInMonth(e, m))
       })
     const here = allBuckets.findIndex((b) => b.months.includes(thisMonth))
     if (here >= 0 && has(allBuckets[here].months)) return here
@@ -60,9 +59,9 @@ export function CalendarView({ store }: { store: Store }) {
     const map = new Map<string, PscEvent[]>()
     for (const m of current.months) map.set(m, [])
     for (const e of visible) {
-      const key = e.date ? monthKeyOf(e.date) : e.monthHint
-      if (!key || !map.has(key)) continue
-      map.get(key)!.push(e)
+      for (const m of map.keys()) {
+        if (eventInMonth(e, m)) map.get(m)!.push(e)
+      }
     }
     for (const list of map.values()) {
       list.sort((a, b) => (a.date ?? '9999').localeCompare(b.date ?? '9999') || a.name.localeCompare(b.name))
@@ -81,9 +80,9 @@ export function CalendarView({ store }: { store: Store }) {
     const map = new Map<string, PscEvent[]>()
     for (const m of yearMonths) map.set(m, [])
     for (const e of visible) {
-      const key = e.date ? monthKeyOf(e.date) : e.monthHint
-      if (!key || !map.has(key)) continue
-      map.get(key)!.push(e)
+      for (const m of map.keys()) {
+        if (eventInMonth(e, m)) map.get(m)!.push(e)
+      }
     }
     for (const list of map.values()) {
       list.sort((a, b) => (a.date ?? '9999').localeCompare(b.date ?? '9999') || a.name.localeCompare(b.name))
@@ -95,7 +94,7 @@ export function CalendarView({ store }: { store: Store }) {
   const shownByMonth = isYear ? yearByMonth : byMonth
 
   const inRange = useMemo(
-    () => shownMonths.flatMap((m) => shownByMonth.get(m) ?? []),
+    () => Array.from(new Map(shownMonths.flatMap((m) => shownByMonth.get(m) ?? []).map((e) => [e.id, e])).values()),
     [shownByMonth, shownMonths],
   )
   const rangeTitle = isYear ? `PSC Calendar · ${store.schoolYear} at a glance` : `PSC Calendar · ${current.label}`
@@ -200,8 +199,8 @@ export function CalendarView({ store }: { store: Store }) {
           <Banner tone="warn" className="no-print">
             <span>
               <strong>{unconfirmed} dates in this range are not confirmed.</strong>{' '}
-              They were rolled forward from 2025-26. Confirm each one with Ms. Francis, then mark it confirmed so the
-              exports can safely go to parents.
+              Some dates are from the school's tentative calendar; others still need to be agreed.
+              Check each event's notes and confirm with Ms. Francis before sharing as final.
             </span>
           </Banner>
         )}
@@ -222,7 +221,7 @@ export function CalendarView({ store }: { store: Store }) {
                     <div className="yr-list">
                       {events.map((e) => (
                         <div className={`yr-row cat-${e.category}`} key={e.id}>
-                          <span className="d">{e.date ? Number(e.date.slice(8)) : 'TBD'}</span>
+                          <span className="d">{e.date ? (e.date.slice(0, 7) < m ? '1+' : Number(e.date.slice(8))) : 'TBD'}</span>
                           <span className="dot" aria-hidden />
                           <button className="n" onClick={() => setEditing(e)} title={whenLabel(e)}>
                             {e.name}
@@ -274,7 +273,7 @@ export function CalendarView({ store }: { store: Store }) {
                   <div className="month-list">
                     {events.map((e) => (
                       <div className="month-row" key={e.id}>
-                        <div className="when">{e.date ? formatShort(e.date) : 'TBD'}</div>
+                        <div className="when">{e.date ? formatShort(e.date) + (e.endDate ? ' - ' + formatShort(e.endDate) : '') : 'TBD'}</div>
                         <div className="what">
                           <button className="linkish" onClick={() => setEditing(e)}>{e.name}</button>
                           {detail !== 'summary' && (
@@ -349,8 +348,7 @@ export function CalendarView({ store }: { store: Store }) {
 
 function countIn(events: PscEvent[], months: string[]): number {
   return events.filter((e) => {
-    const key = e.date ? monthKeyOf(e.date) : e.monthHint
-    return key ? months.includes(key) : false
+    return months.some((m) => eventInMonth(e, m))
   }).length
 }
 

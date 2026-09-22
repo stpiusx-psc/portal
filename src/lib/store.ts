@@ -73,8 +73,9 @@ type OverrideRow = {
 
 function rowToOverride(r: OverrideRow): EventOverride {
   const ov: EventOverride = {}
-  if (r.date !== null) ov.date = r.date
-  if (r.end_date !== null) ov.endDate = r.end_date
+  if (r.date !== null || r.date_confidence === 'tbd') ov.date = r.date
+  // A dated editor save also explicitly saves the end date, including clearing it.
+  if (r.end_date !== null || r.date_confidence !== null) ov.endDate = r.end_date
   if (r.date_confidence) ov.dateConfidence = r.date_confidence
   if (r.main_resp) ov.mainResp = r.main_resp
   if (r.support_resp) ov.supportResp = r.support_resp

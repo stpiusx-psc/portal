@@ -91,9 +91,10 @@ export function toIcs(events: PscEvent[], calName: string): string {
     const end = parseISO(e.endDate ?? e.date)
     end.setDate(end.getDate() + 1)
     const owners = e.mainResp.length ? `Lead: ${e.mainResp.join(', ')}` : 'Lead: TBD'
-    const conf = e.dateConfidence === 'confirmed' ? 'Date confirmed' : 'DATE NOT YET CONFIRMED — proposed from last year'
+    const conf = e.dateConfidence === 'confirmed' ? 'Date confirmed' : 'DATE NOT YET CONFIRMED — tentative; check event notes'
     const desc = [
       e.summary,
+      e.notes ?? '',
       '',
       owners,
       conf,
@@ -133,6 +134,7 @@ export function eventsToText(events: PscEvent[], title: string, detail: 'summary
     if (e.budget != null) out.push(`    Budget: $${e.budget}`)
     if (e.needsVolunteers) out.push(`    Volunteers: ${e.volunteerCount ? `${e.volunteerCount} slots` : 'needed'}${e.signUpUrl ? ` — ${e.signUpUrl}` : ''}`)
     out.push(`    ${e.summary}`)
+    if (e.notes) out.push(`    Notes: ${e.notes}`)
     if (detail === 'full') {
       if (e.supportResp?.length) out.push(`    Support: ${e.supportResp.join(', ')}`)
       if (e.actuals?.length) {
