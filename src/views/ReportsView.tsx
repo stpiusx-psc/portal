@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Store } from '../lib/store'
 import type { PecReport } from '../lib/types'
 import { Banner, Chip, Empty, PrintHead } from '../components/ui'
 import { generateReport, reportToMarkdown, reportToText } from '../lib/pecReport'
 import { formatLong, todayISO } from '../lib/dates'
 import { downloadText, printView } from '../lib/exporters'
+import { ACCEPTED_FILES, readDocumentFile } from '../lib/docText'
+import { useAuth } from '../lib/auth'
+import { REMOTE_ENABLED } from '../lib/supabase'
 
 type Bucket = keyof Pick<PecReport, 'highlights' | 'decisions' | 'financials' | 'asksForPec' | 'upcoming'>
 
@@ -17,17 +20,21 @@ const BUCKETS: { key: Bucket; label: string; help: string }[] = [
 ]
 
 export function ReportsView({ store }: { store: Store }) {
+  const auth = useAuth()
   const [raw, setRaw] = useState('')
   const [draft, setDraft] = useState<PecReport | null>(null)
   const [pecDate, setPecDate] = useState('')
   const [status, setStatus] = useState<string | null>(null)
+  const [dragging, setDragging] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const fileInput = useRef<HTMLInputElement>(null)
 
-  const run = () => {
-    if (raw.trim().length < 40) {
-      setStatus('Paste the PSC agenda or minutes first — there is not enough text to work with.')
+  const run = (text = raw) => {
+    if (text.trim().length < 40) {
+      setStatus('Add the PSC agenda or minutes first — there is not enough text to work with.')
       return
     }
-    const r = generateReport(raw, { pecMeetingDate: pecDate || undefined })
+    const r = generateReport(text, { pecMeetingDate: pecDate || undefined })
     setDraft(r)
     const total = BUCKETS.reduce((s, b) => s + r[b.key].length, 0)
     setStatus(
@@ -35,6 +42,19 @@ export function ReportsView({ store }: { store: Store }) {
         ? 'Nothing could be extracted automatically. Check the text pasted correctly, or add the points by hand below.'
         : `Draft built: ${total} points found${r.sourceMeetingDate ? ` from the meeting of ${formatLong(r.sourceMeetingDate)}` : ''}. Review and edit before sending.`,
     )
+  }
+
+  const takeFile = async (file: File | undefined | null) => {
+    if (!file) return
+    setBusy(true)
+    setStatus(`Reading ${file.name}…`)
+    const res = await readDocumentFile(file)
+    setBusy(false)
+    if (!res.ok) { setStatus(res.note); return }
+    setRaw(res.text)
+    // Reading the file is the instruction to draft the report; a second button
+    // press in between would be ceremony.
+    run(res.text)
   }
 
   const editBullet = (bucket: Bucket, idx: number, value: string) => {
@@ -71,13 +91,29 @@ export function ReportsView({ store }: { store: Store }) {
     }
   }
 
+  // The liaison's own working area. A report carries the committee's asks and
+  // its financial position before either has been put to the PEC, so it is not
+  // for editors generally — the principal and the PEC chair are editors.
+  if (REMOTE_ENABLED && !auth.isAdmin) {
+    return (
+      <>
+        <header className="topbar no-print"><div><h1>PEC Reports</h1></div></header>
+        <div className="content">
+          <Empty icon="✎" title="Administrators only">
+            This is where the PSC/PEC liaison drafts the monthly report. Ask Jorge Chinchilla if you need something from it.
+          </Empty>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       <header className="topbar no-print">
         <div>
           <h1>PEC Reports</h1>
           <p>
-            Paste the PSC agenda or minutes that Lynda sends, and this drafts the monthly report for the PEC.
+            Upload or paste the PSC agenda or minutes that Lynda sends, and this drafts the monthly report for the PEC.
             Every line comes from the source document — nothing is invented. Edit, then export.
           </p>
         </div>
@@ -96,15 +132,38 @@ export function ReportsView({ store }: { store: Store }) {
 
         <div className="split">
           <div className="card no-print">
-            <div className="card-head"><h2>1 · Paste the PSC document</h2></div>
+            <div className="card-head"><h2>1 · Add the PSC document</h2></div>
             <div className="card-pad">
+              <div
+                className={`dropzone${dragging ? ' over' : ''}`}
+                onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={(e) => { e.preventDefault(); setDragging(false); void takeFile(e.dataTransfer.files?.[0]) }}
+                onClick={() => fileInput.current?.click()}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.current?.click() } }}
+              >
+                <strong>Drop the minutes here, or click to choose a file</strong>
+                <span>Word (.docx), plain text or Markdown. The report is drafted as soon as the file is read.</span>
+                <input
+                  ref={fileInput}
+                  type="file"
+                  accept={ACCEPTED_FILES}
+                  hidden
+                  onChange={(e) => { void takeFile(e.target.files?.[0]); e.target.value = '' }}
+                />
+              </div>
+
+              <p className="or-paste">or paste it instead</p>
+
               <label className="field">
                 <span>PSC agenda or minutes</span>
                 <textarea
                   rows={16}
                   value={raw}
                   onChange={(e) => setRaw(e.target.value)}
-                  placeholder={'Open the Word document Lynda sent, select all (Ctrl+A), copy (Ctrl+C) and paste here.\n\nBoth versions work — the agenda before the meeting, and the minutes with the outputs in red afterwards.'}
+                  placeholder={'Paste the text here if you would rather not upload the file.\n\nBoth versions work — the agenda before the meeting, and the minutes with the outputs in red afterwards.'}
                 />
                 <span className="hint">
                   Paste from Word for the cleanest result. Pasting from a PDF also works.
@@ -117,7 +176,7 @@ export function ReportsView({ store }: { store: Store }) {
               </label>
 
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn btn-primary" onClick={run}>Build the draft report</button>
+                <button className="btn btn-primary" onClick={() => run()} disabled={busy}>Build the draft report</button>
                 {raw && <button className="btn btn-ghost" onClick={() => { setRaw(''); setDraft(null); setStatus(null) }}>Clear</button>}
               </div>
             </div>

@@ -47,7 +47,7 @@ const NAV: { view: Route['view']; label: string; icon: string; group: string; ad
   { view: 'dashboard', label: 'Dashboard', icon: '◈', group: 'Overview' },
   { view: 'calendar', label: 'Year Calendar', icon: '▦', group: 'Overview' },
   { view: 'events', label: 'Events & Playbooks', icon: '❑', group: 'Overview' },
-  { view: 'reports', label: 'PEC Reports', icon: '✎', group: 'PEC liaison' },
+  { view: 'reports', label: 'PEC Reports', icon: '✎', group: 'PEC liaison', adminOnly: true },
   { view: 'pec-meeting', label: 'PEC Meeting Notes', icon: '✉', group: 'PEC liaison' },
   { view: 'team', label: 'Team & Roles', icon: '☰', group: 'Reference' },
   { view: 'data', label: 'Backup & Data', icon: '⇅', group: 'Reference' },

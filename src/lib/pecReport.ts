@@ -15,13 +15,24 @@ import { formatLong } from './dates'
  * Nothing is invented — every line comes from the source text.
  */
 
+/**
+ * What can sit in front of a section heading before the words start.
+ *
+ * The documents number sections differently depending on where the text came
+ * from: "3) Upcoming Events" when pasted from one export, "1. Upcoming Events"
+ * from another, and sometimes with Word's bold surviving as literal asterisks
+ * ("**Upcoming Events:**") or a Markdown heading mark. All of it is noise in
+ * front of the only thing that identifies the section: its name.
+ */
+const HEAD_PREFIX = String.raw`^[\s>#*_-]*(?:\d+\s*[.)]\s*)?[\s*_]*`
+
 const SECTION_PATTERNS: { key: Section; re: RegExp }[] = [
-  { key: 'recent', re: /^\s*\d?\)?\s*recent\s+events/i },
-  { key: 'upcoming', re: /^\s*\d?\)?\s*upcoming\s+events/i },
-  { key: 'ongoing', re: /^\s*\d?\)?\s*ongoing\s+events/i },
-  { key: 'volunteering', re: /^\s*\d?\)?\s*parent\s+volunteer/i },
-  { key: 'next', re: /^\s*\d?\)?\s*next\s+psc\s+meeting/i },
-  { key: 'new', re: /^\s*(new\s+(item|idea)|\d?\)?\s*new\s+(item|idea))/i },
+  { key: 'recent', re: new RegExp(HEAD_PREFIX + String.raw`recent\s+events`, 'i') },
+  { key: 'upcoming', re: new RegExp(HEAD_PREFIX + String.raw`upcoming\s+events`, 'i') },
+  { key: 'ongoing', re: new RegExp(HEAD_PREFIX + String.raw`ongoing\s+events`, 'i') },
+  { key: 'volunteering', re: new RegExp(HEAD_PREFIX + String.raw`parent\s+volunteer`, 'i') },
+  { key: 'next', re: new RegExp(HEAD_PREFIX + String.raw`next\s+psc\s+meeting`, 'i') },
+  { key: 'new', re: new RegExp(HEAD_PREFIX + String.raw`new\s+(item|idea)`, 'i') },
 ]
 
 type Section = 'recent' | 'upcoming' | 'ongoing' | 'volunteering' | 'next' | 'new' | 'other'
@@ -41,11 +52,16 @@ const DATE_RE = /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\
 function normalise(raw: string): string {
   return raw
     .replace(/\r/g, '\n')
+    // Emphasis that survived a conversion as literal asterisks or underscores.
+    // Runs of two or more only: a single leading '*' is a bullet and is handled
+    // as one further down.
+    .replace(/\*{2,}|_{2,}/g, '')
+    .replace(/^[ \t]*#{1,6}[ \t]+/gm, '')
     .replace(/[ \t]+/g, ' ')
     // Numbered sections: " 3) Upcoming Events:"
-    .replace(/\s(\d\))\s+(?=[A-Z])/g, '\n$1 ')
+    .replace(/\s(\d[.)])\s+(?=[A-Z])/g, '\n$1 ')
     // Lettered events: " b) Scholastic Book Fair"
-    .replace(/\s([a-z]\))\s+(?=[A-Z(])/g, '\n$1 ')
+    .replace(/\s([a-z][.)])\s+(?=[A-Z(])/g, '\n$1 ')
     // The "o" bullet used throughout these documents.
     .replace(/\s+o\s+(?=[A-Z(])/g, '\no ')
     .replace(/\s*([\u25cf\u2022])\s*/g, '\n\u2022 ')
@@ -63,7 +79,7 @@ function toLines(text: string): string[] {
   for (const line of rawLines) {
     const prev = out[out.length - 1]
     const startsNewBlock =
-      /^([0-9]+\)|[a-z]\)|o\s|\u25cf|\u2022|-|\*)/i.test(line) ||
+      /^([0-9]+[.)]\s|[a-z][.)]\s|o\s|\u25cf|\u2022|-|\*)/i.test(line) ||
       SECTION_PATTERNS.some((p) => p.re.test(line))
     // A PDF export drops single words onto their own line. Anything short that
     // does not open a new block and does not close a sentence is a wrap.
@@ -77,7 +93,7 @@ function toLines(text: string): string[] {
 /** Strip bullet markers and the leading letter/number label. */
 function clean(line: string): string {
   return line
-    .replace(/^([0-9]+\)|[a-z]\)|o\s+|●|•|[-*])\s*/i, '')
+    .replace(/^([0-9]+\s*[.)]\s+|[a-z][.)]\s+|o\s+|●|•|[-*])\s*/i, '')
     .replace(/\s+/g, ' ')
     .trim()
 }
@@ -89,9 +105,15 @@ function sentences(text: string): string[] {
     .filter((s) => s.length > 3)
 }
 
-/** Pull the event name out of a lettered heading like "a) Runathon (Lynda)". */
+/**
+ * Pull the event name out of a labelled heading like "a) Runathon (Lynda)".
+ *
+ * Numbers and full stops count as labels too ("1. Back to School BBQ"), or the
+ * label ends up inside the event name and every bullet underneath reads
+ * "1. Back to School BBQ — ...".
+ */
 function headingName(line: string): string | null {
-  const m = line.match(/^[a-z]\)\s*([^(]{2,80}?)\s*(\(|$)/i)
+  const m = line.match(/^(?:[a-z]|\d{1,2})\s*[.)]\s*([^(]{2,80}?)\s*(\(|$)/i)
   if (m) {
     const name = m[1].replace(/[:.]$/, '').trim()
     if (name.length > 2) return name
@@ -99,7 +121,7 @@ function headingName(line: string): string | null {
   // Older minutes (e.g. May 2025) use a bold Title Case line instead of a
   // lettered label: "First Holy Communion Reception (May 4)". Detect a short,
   // mostly-capitalised line that does not close a sentence.
-  if (/^([0-9]+\)|[a-z]\)|o\s|\u25cf|\u2022|[-*])/i.test(line)) return null
+  if (/^([0-9]+[.)]\s|[a-z][.)]\s|o\s|\u25cf|\u2022|[-*])/i.test(line)) return null
   const bare = line.replace(/\s*\([^)]*\)\s*$/, '').replace(/[:.]$/, '').trim()
   if (bare.length < 3 || bare.length > 60) return null
   if (/[.!?]$/.test(line)) return null
@@ -154,7 +176,10 @@ export function parseSource(raw: string): ParsedSource {
     const name = headingName(line)
     if (name) {
       push()
-      group = { heading: line.replace(/^[a-z]\)\s*/i, '').trim(), lines: [] }
+      // clean() rather than a hand-rolled strip: the label can be "a)", "1." or
+      // "12)", and whichever it is must not survive into the heading, or every
+      // bullet underneath reads "1. Back to School BBQ — ...".
+      group = { heading: clean(line), lines: [] }
       continue
     }
     if (!group) group = { heading: null, lines: [] }

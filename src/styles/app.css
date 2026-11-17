@@ -335,3 +335,21 @@ ul.plain li { margin-bottom: 5px; }
 .yr-row .n .prop { color: var(--ink-faint); font-style: italic; font-size: 11px; white-space: nowrap; }
 .yr-row .dot { flex: 0 0 6px; height: 6px; border-radius: 50%; background: var(--cat); margin-top: 5px; }
 .yr-empty { padding: 8px 12px 11px; color: var(--ink-faint); font-size: 12px; font-style: italic; }
+
+/* Dropping the minutes in beats opening Word, selecting all and copying, which
+   is the step that made this screen feel like a chore. */
+.dropzone {
+  display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center;
+  padding: 20px 16px; margin-bottom: 12px; cursor: pointer;
+  border: 1.5px dashed var(--line); border-radius: var(--radius);
+  background: var(--surface-soft, #fafcfb); transition: border-color .12s, background .12s;
+}
+.dropzone:hover, .dropzone:focus-visible { border-color: var(--spx-green-800); }
+.dropzone.over { border-color: var(--spx-green-800); background: var(--accent-soft, #e9f1ec); border-style: solid; }
+.dropzone strong { font-size: 13.5px; }
+.dropzone span { font-size: 12px; color: var(--ink-muted); }
+.or-paste {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 10px; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint);
+}
+.or-paste::before, .or-paste::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
