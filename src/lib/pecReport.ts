@@ -267,6 +267,9 @@ export function generateReport(raw: string, opts: { pecMeetingDate?: string } = 
     financials,
     asksForPec,
     upcoming,
+    // Deliberately empty. These are the liaison's own notes from the PEC
+    // meeting, so nothing in the PSC's document can supply them.
+    liaisonNotes: [],
     sourceText: raw,
   }
 }

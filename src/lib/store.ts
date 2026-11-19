@@ -215,6 +215,7 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
         financials: (r.financials as string[]) ?? [],
         asksForPec: (r.asks_for_pec as string[]) ?? [],
         upcoming: (r.upcoming as string[]) ?? [],
+        liaisonNotes: (r.liaison_notes as string[]) ?? [],
         sourceText: (r.source_text as string) ?? undefined,
       }))
 
@@ -341,6 +342,7 @@ export function useStore(opts: { remote: boolean; canEdit: boolean; email: strin
         financials: r.financials,
         asks_for_pec: r.asksForPec,
         upcoming: r.upcoming,
+        liaison_notes: r.liaisonNotes ?? [],
         source_text: r.sourceText ?? null,
         created_by: opts.email,
       }).then(({ error }) => (error ? fail('That report', error.message) : ok()))

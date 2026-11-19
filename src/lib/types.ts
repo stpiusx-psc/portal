@@ -129,6 +129,15 @@ export interface PecReport {
   financials: string[]
   asksForPec: string[]
   upcoming: string[]
+  /**
+   * The liaison's own notes from the PEC meeting this report was taken to.
+   *
+   * Never parsed out of the source and never included in an export: the report
+   * goes TO the PEC, and these are private observations about that meeting.
+   * They live with the report so the record of "what we sent" and "what came
+   * back" stay together.
+   */
+  liaisonNotes?: string[]
   /** The raw text that was pasted in, kept for traceability. */
   sourceText?: string
 }

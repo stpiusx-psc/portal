@@ -10,6 +10,8 @@ import { useAuth } from '../lib/auth'
 import { REMOTE_ENABLED } from '../lib/supabase'
 
 type Bucket = keyof Pick<PecReport, 'highlights' | 'decisions' | 'financials' | 'asksForPec' | 'upcoming'>
+/** The parsed buckets plus the liaison's own notes, which no parser fills. */
+type EditableList = Bucket | 'liaisonNotes'
 
 const BUCKETS: { key: Bucket; label: string; help: string }[] = [
   { key: 'highlights', label: 'Highlights', help: 'What happened since the last PEC meeting.' },
@@ -57,24 +59,24 @@ export function ReportsView({ store }: { store: Store }) {
     run(res.text)
   }
 
-  const editBullet = (bucket: Bucket, idx: number, value: string) => {
+  const editBullet = (bucket: EditableList, idx: number, value: string) => {
     setDraft((d) => {
       if (!d) return d
-      const next = [...d[bucket]]
+      const next = [...(d[bucket] ?? [])]
       if (value.trim() === '') next.splice(idx, 1)
       else next[idx] = value
       return { ...d, [bucket]: next }
     })
   }
 
-  const addBullet = (bucket: Bucket) => {
-    setDraft((d) => (d ? { ...d, [bucket]: [...d[bucket], ''] } : d))
+  const addBullet = (bucket: EditableList) => {
+    setDraft((d) => (d ? { ...d, [bucket]: [...(d[bucket] ?? []), ''] } : d))
   }
 
-  const move = (bucket: Bucket, idx: number, dir: -1 | 1) => {
+  const move = (bucket: EditableList, idx: number, dir: -1 | 1) => {
     setDraft((d) => {
       if (!d) return d
-      const next = [...d[bucket]]
+      const next = [...(d[bucket] ?? [])]
       const j = idx + dir
       if (j < 0 || j >= next.length) return d
       ;[next[idx], next[j]] = [next[j], next[idx]]
@@ -237,10 +239,57 @@ export function ReportsView({ store }: { store: Store }) {
                   </section>
                 ))}
 
+                <section className="liaison-notes no-print">
+                  <h3>My notes from the PEC meeting</h3>
+                  <p className="ln-sub">
+                    Yours, not the PSC's. Nothing here is taken from the minutes, and none of it
+                    goes into the report you copy, download or print — the report goes <em>to</em> the
+                    PEC, these stay with you. Use them for what was said, what to chase and what to
+                    bring back to Lynda.
+                  </p>
+                  {(draft.liaisonNotes ?? []).length === 0 ? (
+                    <p className="ln-empty">No notes on this one yet.</p>
+                  ) : (
+                    <ul>
+                      {(draft.liaisonNotes ?? []).map((item, i) => (
+                        <li key={i}>
+                          <span className="bullet-edit">
+                            <textarea
+                              rows={Math.max(2, Math.ceil(item.length / 46))}
+                              value={item}
+                              onChange={(ev) => editBullet('liaisonNotes', i, ev.target.value)}
+                              aria-label={`My note ${i + 1}`}
+                              placeholder="What happened, what was asked, what to follow up"
+                            />
+                            <button className="btn btn-sm btn-ghost" title="Move up" onClick={() => move('liaisonNotes', i, -1)}>↑</button>
+                            <button className="btn btn-sm btn-ghost" title="Move down" onClick={() => move('liaisonNotes', i, 1)}>↓</button>
+                            <button className="btn btn-sm btn-ghost" title="Remove" onClick={() => editBullet('liaisonNotes', i, '')}>✕</button>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                    <button className="btn btn-sm" onClick={() => addBullet('liaisonNotes')}>+ Add a note</button>
+                    {(draft.liaisonNotes ?? []).length > 0 && (
+                      <button
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => copy((draft.liaisonNotes ?? []).map((n) => `- ${n}`).join('\n'))}
+                      >
+                        ⧉ Copy my notes
+                      </button>
+                    )}
+                  </div>
+                </section>
+
                 <div className="no-print" style={{ marginTop: 22, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button
                     className="btn btn-primary"
-                    onClick={() => { store.saveReport({ ...draft, pecMeetingDate: pecDate || draft.pecMeetingDate }); setStatus('Report saved to this portal.') }}
+                    onClick={() => {
+                      const n = (draft.liaisonNotes ?? []).filter((x) => x.trim()).length
+                      store.saveReport({ ...draft, pecMeetingDate: pecDate || draft.pecMeetingDate })
+                      setStatus(n ? `Report saved, with ${n} of your own note${n === 1 ? '' : 's'}.` : 'Report saved to this portal.')
+                    }}
                   >
                     Save this report
                   </button>
@@ -263,6 +312,9 @@ export function ReportsView({ store }: { store: Store }) {
                     </button>
                     <div style={{ fontSize: 12, color: 'var(--ink-muted)', marginTop: 2 }}>
                       {BUCKETS.map((b) => `${r[b.key].length} ${b.label.toLowerCase()}`).join(' · ')}
+                      {(r.liaisonNotes ?? []).length > 0 && (
+                        <> · <strong>{r.liaisonNotes!.length} of your notes</strong></>
+                      )}
                     </div>
                   </div>
                   <div className="who">

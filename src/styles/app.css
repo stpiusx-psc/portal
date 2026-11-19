@@ -353,3 +353,17 @@ ul.plain li { margin-bottom: 5px; }
   margin: 0 0 10px; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint);
 }
 .or-paste::before, .or-paste::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
+
+/* The liaison's own notes. Visually separate from the parsed sections because
+   they are a different kind of thing: nothing here came from the minutes, and
+   none of it leaves in an export. */
+.liaison-notes {
+  margin-top: 24px; padding: 16px 18px;
+  border: 1px solid var(--line); border-left: 3px solid var(--spx-gold-500);
+  border-radius: var(--radius); background: var(--surface-soft, #fafcfb);
+}
+.liaison-notes h3 { margin: 0 0 4px; font-size: 14px; }
+.liaison-notes .ln-sub { margin: 0 0 12px; font-size: 12.5px; line-height: 1.5; color: var(--ink-muted); }
+.liaison-notes .ln-empty { margin: 0 0 8px; font-size: 13px; font-style: italic; color: var(--ink-faint); }
+.liaison-notes ul { margin: 0; padding-left: 18px; }
+.liaison-notes li { margin-bottom: 6px; }
